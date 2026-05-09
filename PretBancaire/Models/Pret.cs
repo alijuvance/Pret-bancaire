@@ -1,4 +1,4 @@
-namespace PretBancaire.Models
+﻿namespace PretBancaire.Models
 {
     /// <summary>
     /// Représente un prêt bancaire accordé à un client.
@@ -63,3 +63,4 @@ namespace PretBancaire.Models
             $"Prêt #{Id} - {Montant:N2} USD - {StatutLibelle}";
     }
 }
+

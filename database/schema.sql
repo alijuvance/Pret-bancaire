@@ -110,23 +110,4 @@ VALUES (
     'Admin'
 );
 
--- =============================================================================
--- DONNÉES DE TEST (optionnel — à supprimer en production)
--- =============================================================================
 
--- Quelques clients de test
-INSERT INTO clients (nom, prenom, date_naissance, cin, telephone, adresse, email) VALUES
-('Dupont',   'Jean',    '1985-03-15', 'CIN001', '+243 812345678', '123 Rue Principale, Kinshasa',  'jean.dupont@email.com'),
-('Martin',   'Marie',   '1990-07-22', 'CIN002', '+243 823456789', '456 Avenue de la Paix, Lubumbashi', 'marie.martin@email.com'),
-('Kabila',   'Pierre',  '1988-11-30', 'CIN003', '+243 834567890', '789 Boulevard Central, Goma', 'pierre.kabila@email.com');
-
--- Quelques prêts de test
-INSERT INTO prets (client_id, montant, taux_interet, duree_mois, mensualite, montant_total, statut, date_approbation) VALUES
-(1, 50000.00, 8.50, 24, 2275.27, 54606.48, 'EnCours', NOW()),
-(2, 100000.00, 7.00, 36, 3088.29, 111178.44, 'Approuve', NOW()),
-(3, 25000.00, 9.00, 12, 2183.33, 26199.96, 'EnAttente', NULL);
-
--- Quelques paiements de test
-INSERT INTO paiements (pret_id, montant, date_paiement, mode_paiement, reference) VALUES
-(1, 2275.27, '2026-04-01', 'Virement', 'VIR-2026-001'),
-(1, 2275.27, '2026-05-01', 'Virement', 'VIR-2026-002');

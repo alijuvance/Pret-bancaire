@@ -1,4 +1,4 @@
-namespace PretBancaire.Models
+﻿namespace PretBancaire.Models
 {
     /// <summary>
     /// Représente un utilisateur du système (Admin ou Agent bancaire).
@@ -28,3 +28,4 @@ namespace PretBancaire.Models
         public override string ToString() => $"{NomComplet} ({Role})";
     }
 }
+

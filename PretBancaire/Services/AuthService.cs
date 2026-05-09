@@ -1,4 +1,4 @@
-using PretBancaire.Data;
+﻿using PretBancaire.Data;
 using PretBancaire.Models;
 using PretBancaire.Utils;
 
@@ -43,3 +43,4 @@ namespace PretBancaire.Services
             _repo.LoginExiste(login, excludeId);
     }
 }
+

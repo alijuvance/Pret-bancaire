@@ -1,4 +1,4 @@
-using PretBancaire.Models;
+﻿﻿using PretBancaire.Models;
 using PretBancaire.Services;
 
 namespace PretBancaire.Forms
@@ -16,7 +16,7 @@ namespace PretBancaire.Forms
 
         public FormUtilisateurs()
         {
-            this.BackColor = Color.FromArgb(24, 28, 40);
+            this.BackColor = Color.FromArgb(0, 0, 0);
             ConstruireInterface();
             ChargerDonnees();
         }
@@ -27,61 +27,78 @@ namespace PretBancaire.Forms
             dgv = new DataGridView
             {
                 Dock = DockStyle.Fill,
-                BackgroundColor = Color.FromArgb(28, 32, 46), ForeColor = Color.White,
-                GridColor = Color.FromArgb(50, 55, 70), BorderStyle = BorderStyle.None,
+                BackgroundColor = Color.FromArgb(0, 0, 0),
+                ForeColor = Color.White,
+                GridColor = Color.FromArgb(20, 20, 20),
+                BorderStyle = BorderStyle.None,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 ReadOnly = true, AllowUserToAddRows = false, RowHeadersVisible = false,
                 Font = new Font("Segoe UI", 10)
             };
-            dgv.DefaultCellStyle.BackColor = Color.FromArgb(32, 38, 55);
-            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(60, 130, 246);
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(16, 20, 32);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(150, 160, 180);
+            dgv.DefaultCellStyle.BackColor = Color.FromArgb(10, 10, 10);
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 112, 243);
+            dgv.DefaultCellStyle.Padding = new Padding(10, 5, 10, 5);
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 0, 0);
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(161, 161, 170);
             dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             dgv.EnableHeadersVisualStyles = false;
-            dgv.ColumnHeadersHeight = 40; dgv.RowTemplate.Height = 35;
+            dgv.ColumnHeadersHeight = 50; dgv.RowTemplate.Height = 45;
             dgv.SelectionChanged += (s, e) => SelectionChanged();
             this.Controls.Add(dgv);
 
             // === Formulaire ===
             var panelForm = new Panel
             {
-                Dock = DockStyle.Bottom, Height = 130,
-                BackColor = Color.FromArgb(28, 32, 46), Padding = new Padding(15)
+                Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Color.FromArgb(10, 10, 10), Padding = new Padding(20)
             };
 
-            int x = 15, y = 10;
-            panelForm.Controls.Add(Lbl("Nom:", x, y)); txtNom = Txt(x + 50, y, 150); panelForm.Controls.Add(txtNom);
-            panelForm.Controls.Add(Lbl("Prénom:", x + 215, y)); txtPrenom = Txt(x + 280, y, 150); panelForm.Controls.Add(txtPrenom);
-            panelForm.Controls.Add(Lbl("Rôle:", x + 450, y));
+            var flowInputs = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top, AutoSize = true, WrapContents = true, Padding = new Padding(0, 0, 0, 10)
+            };
+
+            txtNom = CreerInputText();
+            txtPrenom = CreerInputText();
+            txtLogin = CreerInputText();
+            txtMdp = CreerInputText();
+            txtMdp.PasswordChar = '●';
+            
             cmbRole = new ComboBox
             {
-                Font = new Font("Segoe UI", 10), Size = new Size(120, 28),
-                Location = new Point(x + 500, y), DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = Color.FromArgb(45, 52, 70), ForeColor = Color.White
+                Font = new Font("Segoe UI", 10), Height = 35,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(20, 20, 20), ForeColor = Color.White
             };
             cmbRole.Items.AddRange(new[] { "Agent", "Admin" });
             cmbRole.SelectedIndex = 0;
-            panelForm.Controls.Add(cmbRole);
 
-            y = 50;
-            panelForm.Controls.Add(Lbl("Login:", x, y)); txtLogin = Txt(x + 55, y, 150); panelForm.Controls.Add(txtLogin);
-            panelForm.Controls.Add(Lbl("Mot de passe:", x + 215, y)); txtMdp = Txt(x + 330, y, 150); panelForm.Controls.Add(txtMdp);
-            txtMdp.PasswordChar = '●';
+            flowInputs.Controls.Add(CreerChamp("Nom", txtNom, 200));
+            flowInputs.Controls.Add(CreerChamp("Prénom", txtPrenom, 200));
+            flowInputs.Controls.Add(CreerChamp("Login", txtLogin, 200));
+            flowInputs.Controls.Add(CreerChamp("Mot de passe", txtMdp, 200));
+            flowInputs.Controls.Add(CreerChamp("RÃ´le", cmbRole, 150));
+            panelForm.Controls.Add(flowInputs);
 
-            y = 90;
-            var btnSave = Btn("💾 Enregistrer", Color.FromArgb(60, 130, 246), x + 350, y);
-            btnSave.Click += (s, e) => Sauvegarder();
-            panelForm.Controls.Add(btnSave);
+            var flowBtns = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top, Height = 60, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(0, 15, 0, 0)
+            };
 
-            var btnDel = Btn("🗑️ Supprimer", Color.FromArgb(239, 68, 68), x + 490, y);
-            btnDel.Click += (s, e) => Supprimer();
-            panelForm.Controls.Add(btnDel);
-
-            var btnNew = Btn("🔄 Nouveau", Color.FromArgb(107, 114, 128), x + 630, y);
+            var btnNew = CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
             btnNew.Click += (s, e) => Nouveau();
-            panelForm.Controls.Add(btnNew);
+            var btnDel = CreerBouton("Supprimer", Color.FromArgb(239, 68, 68), 120);
+            btnDel.Click += (s, e) => Supprimer();
+            var btnSave = CreerBouton("Enregistrer", Color.FromArgb(0, 112, 243), 140);
+            btnSave.Click += (s, e) => Sauvegarder();
+
+            flowBtns.Controls.Add(btnNew);
+            flowBtns.Controls.Add(btnDel);
+            flowBtns.Controls.Add(btnSave);
+            panelForm.Controls.Add(flowBtns);
 
             this.Controls.Add(panelForm);
         }
@@ -102,7 +119,7 @@ namespace PretBancaire.Forms
                         case "Nom": col.HeaderText = "Nom"; break;
                         case "Prenom": col.HeaderText = "Prénom"; break;
                         case "Login": col.HeaderText = "Login"; break;
-                        case "Role": col.HeaderText = "Rôle"; break;
+                        case "Role": col.HeaderText = "RÃ´le"; break;
                         case "DateCreation": col.HeaderText = "Créé le"; col.DefaultCellStyle.Format = "dd/MM/yyyy"; break;
                         case "Actif": col.HeaderText = "Actif"; break;
                         case "MotDePasse":
@@ -145,7 +162,7 @@ namespace PretBancaire.Forms
 
             if (_service.LoginExiste(txtLogin.Text.Trim(), _selectedId))
             {
-                MessageBox.Show("Ce login est déjà utilisé.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Ce login est déjÃ  utilisé.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -205,15 +222,42 @@ namespace PretBancaire.Forms
             cmbRole.SelectedIndex = 0;
         }
 
-        private static Label Lbl(string t, int x, int y) => new()
-        { Text = t, Font = new Font("Segoe UI", 10), ForeColor = Color.FromArgb(200, 210, 225), Location = new Point(x, y + 3), AutoSize = true };
+        private Panel CreerChamp(string texteLabel, Control input, int largeur)
+        {
+            var p = new Panel { Width = largeur, Height = 65, Margin = new Padding(0, 0, 15, 15) };
+            var lbl = new Label { Text = texteLabel.ToUpper(), Dock = DockStyle.Top, Height = 22, ForeColor = Color.FromArgb(161, 161, 170), Font = new Font("Segoe UI", 8, FontStyle.Bold) };
+            input.Dock = DockStyle.Bottom;
+            input.Height = 35;
+            input.Font = new Font("Segoe UI", 10);
+            p.Controls.Add(input);
+            p.Controls.Add(lbl);
+            return p;
+        }
 
-        private static TextBox Txt(int x, int y, int w) => new()
-        { Font = new Font("Segoe UI", 10), Size = new Size(w, 28), Location = new Point(x, y), BackColor = Color.FromArgb(45, 52, 70), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+        private static TextBox CreerInputText() => new()
+        {
+            Font = new Font("Segoe UI", 10),
+            BackColor = Color.FromArgb(20, 20, 20),
+            ForeColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle
+        };
 
-        private static Button Btn(string t, Color bg, int x, int y)
-        { var b = new Button { Text = t, Font = new Font("Segoe UI", 10, FontStyle.Bold), Size = new Size(130, 35), Location = new Point(x, y), BackColor = bg, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand }; b.FlatAppearance.BorderSize = 0; return b; }
+        private static Button CreerBouton(string text, Color bg, int w)
+        {
+            var b = new Button
+            {
+                Text = text, Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Size = new Size(w, 40), Margin = new Padding(10, 0, 0, 0),
+                BackColor = bg, ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand
+            };
+            b.FlatAppearance.BorderSize = 0;
+            return b;
+        }
     }
 }
+
+
+
 
 

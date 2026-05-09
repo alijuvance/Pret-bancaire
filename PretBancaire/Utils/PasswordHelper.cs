@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace PretBancaire.Utils
@@ -36,3 +36,4 @@ namespace PretBancaire.Utils
         }
     }
 }
+

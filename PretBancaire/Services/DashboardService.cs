@@ -1,4 +1,4 @@
-using PretBancaire.Data;
+﻿using PretBancaire.Data;
 
 namespace PretBancaire.Services
 {
@@ -50,3 +50,4 @@ namespace PretBancaire.Services
             PretsParStatut.TryGetValue(statut, out int val) ? val : 0;
     }
 }
+

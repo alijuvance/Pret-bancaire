@@ -1,0 +1,15 @@
+D:\Nouveau dossier\Pret-bancaire\TestDock\bin\Debug\net8.0-windows\TestDock.exe
+D:\Nouveau dossier\Pret-bancaire\TestDock\bin\Debug\net8.0-windows\TestDock.deps.json
+D:\Nouveau dossier\Pret-bancaire\TestDock\bin\Debug\net8.0-windows\TestDock.runtimeconfig.json
+D:\Nouveau dossier\Pret-bancaire\TestDock\bin\Debug\net8.0-windows\TestDock.dll
+D:\Nouveau dossier\Pret-bancaire\TestDock\bin\Debug\net8.0-windows\TestDock.pdb
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.GeneratedMSBuildEditorConfig.editorconfig
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.AssemblyInfoInputs.cache
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.AssemblyInfo.cs
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.csproj.CoreCompileInputs.cache
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.sourcelink.json
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.dll
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\refint\TestDock.dll
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.pdb
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\TestDock.genruntimeconfig.cache
+D:\Nouveau dossier\Pret-bancaire\TestDock\obj\Debug\net8.0-windows\ref\TestDock.dll

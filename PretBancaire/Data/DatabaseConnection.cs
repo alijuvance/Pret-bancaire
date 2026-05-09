@@ -1,4 +1,4 @@
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 
 namespace PretBancaire.Data
 {
@@ -72,3 +72,4 @@ namespace PretBancaire.Data
         }
     }
 }
+

@@ -1,4 +1,4 @@
-using PretBancaire.Services;
+﻿using PretBancaire.Services;
 
 namespace PretBancaire.Forms
 {
@@ -22,7 +22,7 @@ namespace PretBancaire.Forms
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
-            this.BackColor = Color.FromArgb(24, 28, 40);
+            this.BackColor = Color.FromArgb(0, 0, 0);
 
             // === Icône de l'application ===
             try
@@ -37,7 +37,7 @@ namespace PretBancaire.Forms
             {
                 Size = new Size(380, 380),
                 Location = new Point(50, 40),
-                BackColor = Color.FromArgb(32, 38, 55)
+                BackColor = Color.FromArgb(20, 20, 20)
             };
             this.Controls.Add(panelCenter);
 
@@ -77,7 +77,7 @@ namespace PretBancaire.Forms
             {
                 Text = "Connectez-vous pour accéder au système",
                 Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(150, 160, 180),
+                ForeColor = Color.FromArgb(161, 161, 170),
                 AutoSize = false,
                 Size = new Size(380, 20),
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -90,7 +90,7 @@ namespace PretBancaire.Forms
             {
                 Text = "Identifiant",
                 Font = new Font("Segoe UI", 10),
-                ForeColor = Color.FromArgb(200, 210, 225),
+                ForeColor = Color.FromArgb(161, 161, 170),
                 Location = new Point(40, 160),
                 AutoSize = true
             };
@@ -102,7 +102,7 @@ namespace PretBancaire.Forms
                 Font = new Font("Segoe UI", 11),
                 Size = new Size(300, 30),
                 Location = new Point(40, 183),
-                BackColor = Color.FromArgb(45, 52, 70),
+                BackColor = Color.FromArgb(20, 20, 20),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle
             };
@@ -113,7 +113,7 @@ namespace PretBancaire.Forms
             {
                 Text = "Mot de passe",
                 Font = new Font("Segoe UI", 10),
-                ForeColor = Color.FromArgb(200, 210, 225),
+                ForeColor = Color.FromArgb(161, 161, 170),
                 Location = new Point(40, 220),
                 AutoSize = true
             };
@@ -125,7 +125,7 @@ namespace PretBancaire.Forms
                 Font = new Font("Segoe UI", 11),
                 Size = new Size(300, 30),
                 Location = new Point(40, 243),
-                BackColor = Color.FromArgb(45, 52, 70),
+                BackColor = Color.FromArgb(20, 20, 20),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 PasswordChar = '●'
@@ -140,7 +140,7 @@ namespace PretBancaire.Forms
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 Size = new Size(300, 40),
                 Location = new Point(40, 290),
-                BackColor = Color.FromArgb(60, 130, 246),
+                BackColor = Color.FromArgb(0, 112, 243),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand
@@ -210,3 +210,6 @@ namespace PretBancaire.Forms
         }
     }
 }
+
+
+

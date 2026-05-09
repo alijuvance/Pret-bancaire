@@ -24,7 +24,7 @@ namespace PretBancaire.Forms
             this.Text = "Système de Prêt Bancaire";
             this.Size = new Size(1200, 750);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.BackColor = Color.FromArgb(24, 28, 40);
+            this.BackColor = Color.FromArgb(15, 23, 42);
             this.MinimumSize = new Size(1000, 600);
 
             // === Icône ===
@@ -40,7 +40,7 @@ namespace PretBancaire.Forms
             {
                 Dock = DockStyle.Left,
                 Width = 240,
-                BackColor = Color.FromArgb(16, 20, 32)
+                BackColor = Color.FromArgb(10, 15, 28)
             };
             this.Controls.Add(sidebar);
 
@@ -72,8 +72,7 @@ namespace PretBancaire.Forms
                 AutoSize = true
             };
             panelLogo.Controls.Add(lblLogo);
-            sidebar.Controls.Add(panelLogo);
-
+            
             // Utilisateur connecté
             var user = AuthService.UtilisateurConnecte;
             var lblUser = new Label
@@ -85,11 +84,9 @@ namespace PretBancaire.Forms
                 Height = 45,
                 TextAlign = ContentAlignment.MiddleCenter
             };
-            sidebar.Controls.Add(lblUser);
 
             // Séparateur
-            var sep1 = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Color.FromArgb(50, 55, 70) };
-            sidebar.Controls.Add(sep1);
+            var sep1 = new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Color.FromArgb(30, 41, 59) };
 
             // Boutons menu (ajoutés en ordre inverse car Dock=Top empile du bas vers le haut)
             var menus = new (string text, string icon, Action action)[]
@@ -109,12 +106,18 @@ namespace PretBancaire.Forms
             var panelMenus = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
-                Height = menuList.Count * 48 + 10,
+                Height = menuList.Count * 48 + 60,
                 FlowDirection = FlowDirection.TopDown,
-                Padding = new Padding(10, 10, 10, 0),
+                Padding = new Padding(15, 45, 10, 0),
                 BackColor = Color.Transparent
             };
+            
+            // L'ordre d'ajout définit l'ordre d'affichage (du bas vers le haut)
             sidebar.Controls.Add(panelMenus);
+            sidebar.Controls.Add(sep1);
+            sidebar.Controls.Add(lblUser);
+            sidebar.Controls.Add(panelLogo);
+
 
             foreach (var (text, icon, action) in menuList)
             {
@@ -164,7 +167,7 @@ namespace PretBancaire.Forms
             {
                 Dock = DockStyle.Top,
                 Height = 55,
-                BackColor = Color.FromArgb(28, 32, 46),
+                BackColor = Color.FromArgb(30, 41, 59),
                 Padding = new Padding(20, 0, 20, 0)
             };
             this.Controls.Add(header);
@@ -184,16 +187,17 @@ namespace PretBancaire.Forms
             panelContent = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(24, 28, 40),
+                BackColor = Color.FromArgb(15, 23, 42),
                 Padding = new Padding(20)
             };
             this.Controls.Add(panelContent);
 
             // Ordre d'ajout important pour le docking
-            this.Controls.SetChildIndex(sidebar, 0);
-            this.Controls.SetChildIndex(header, 1);
-            this.Controls.SetChildIndex(panelContent, 2);
-
+            // En WinForms, les contrôles avec l'index le plus élevé (au fond) sont dockés en premier.
+            // On veut : Sidebar dockée en premier (gauche), puis Header (Haut), puis Content (Fill).
+            sidebar.SendToBack();
+            panelContent.BringToFront();
+            
             this.ResumeLayout();
         }
 
@@ -231,3 +235,5 @@ namespace PretBancaire.Forms
         }
     }
 }
+
+

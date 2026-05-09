@@ -1,4 +1,4 @@
-namespace PretBancaire.Models
+﻿namespace PretBancaire.Models
 {
     /// <summary>
     /// Représente un client de la banque.
@@ -39,3 +39,4 @@ namespace PretBancaire.Models
         public override string ToString() => $"{NomComplet} (CIN: {Cin})";
     }
 }
+

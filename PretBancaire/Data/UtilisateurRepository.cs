@@ -1,4 +1,4 @@
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using PretBancaire.Models;
 
 namespace PretBancaire.Data
@@ -162,3 +162,4 @@ namespace PretBancaire.Data
         }
     }
 }
+

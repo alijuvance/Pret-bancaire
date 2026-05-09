@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace PretBancaire.Utils
 {
@@ -65,3 +65,4 @@ namespace PretBancaire.Utils
         }
     }
 }
+

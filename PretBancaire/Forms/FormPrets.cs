@@ -1,11 +1,11 @@
-using PretBancaire.Models;
+﻿using PretBancaire.Models;
 using PretBancaire.Services;
 using PretBancaire.Utils;
 
 namespace PretBancaire.Forms
 {
     /// <summary>
-    /// Formulaire de gestion des prêts bancaires.
+    /// Formulaire de gestion des Prêts bancaires.
     /// </summary>
     public class FormPrets : UserControl
     {
@@ -18,7 +18,7 @@ namespace PretBancaire.Forms
 
         public FormPrets()
         {
-            this.BackColor = Color.FromArgb(24, 28, 40);
+            this.BackColor = Color.FromArgb(0, 0, 0);
             ConstruireInterface();
             ChargerDonnees();
         }
@@ -26,117 +26,108 @@ namespace PretBancaire.Forms
         private void ConstruireInterface()
         {
             // === Barre de filtre ===
-            var panelFiltre = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.Transparent };
+            var panelFiltre = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.FromArgb(0, 0, 0) };
+            
+            var lblFiltre = new Label { Text = "FILTRER PAR STATUT", Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.FromArgb(161, 161, 170), AutoSize = true, Location = new Point(20, 22) };
+            panelFiltre.Controls.Add(lblFiltre);
 
-            panelFiltre.Controls.Add(CreerLabel("Filtrer par statut:", 10, 15));
             cmbStatutFiltre = new ComboBox
             {
-                Font = new Font("Segoe UI", 10),
-                Size = new Size(160, 28),
-                Location = new Point(145, 12),
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = Color.FromArgb(45, 52, 70),
-                ForeColor = Color.White
+                Font = new Font("Segoe UI", 10), Size = new Size(160, 35), Location = new Point(160, 15),
+                DropDownStyle = ComboBoxStyle.DropDownList, BackColor = Color.FromArgb(20, 20, 20), ForeColor = Color.White
             };
             cmbStatutFiltre.Items.AddRange(new[] { "Tous", "EnAttente", "Approuve", "EnCours", "Termine", "Rejete" });
             cmbStatutFiltre.SelectedIndex = 0;
             cmbStatutFiltre.SelectedIndexChanged += (s, e) => Filtrer();
             panelFiltre.Controls.Add(cmbStatutFiltre);
-
             this.Controls.Add(panelFiltre);
 
             // === Grille ===
             dgv = new DataGridView
             {
                 Dock = DockStyle.Fill,
-                BackgroundColor = Color.FromArgb(28, 32, 46),
-                ForeColor = Color.White,
-                GridColor = Color.FromArgb(50, 55, 70),
-                BorderStyle = BorderStyle.None,
+                BackgroundColor = Color.FromArgb(0, 0, 0), ForeColor = Color.White,
+                GridColor = Color.FromArgb(20, 20, 20), BorderStyle = BorderStyle.None,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                ReadOnly = true, AllowUserToAddRows = false,
-                RowHeadersVisible = false,
+                ReadOnly = true, AllowUserToAddRows = false, RowHeadersVisible = false,
                 Font = new Font("Segoe UI", 10)
             };
-            dgv.DefaultCellStyle.BackColor = Color.FromArgb(32, 38, 55);
-            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(60, 130, 246);
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(16, 20, 32);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(150, 160, 180);
+            dgv.DefaultCellStyle.BackColor = Color.FromArgb(10, 10, 10);
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 112, 243);
+            dgv.DefaultCellStyle.Padding = new Padding(10, 5, 10, 5);
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 0, 0);
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(161, 161, 170);
             dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             dgv.EnableHeadersVisualStyles = false;
-            dgv.ColumnHeadersHeight = 40;
-            dgv.RowTemplate.Height = 35;
+            dgv.ColumnHeadersHeight = 50; dgv.RowTemplate.Height = 45;
             this.Controls.Add(dgv);
 
             // === Panel formulaire ===
             var panelForm = new Panel
             {
-                Dock = DockStyle.Bottom, Height = 195,
-                BackColor = Color.FromArgb(28, 32, 46), Padding = new Padding(15)
+                Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Color.FromArgb(10, 10, 10), Padding = new Padding(20)
             };
 
-            int x = 15, y = 10;
-            panelForm.Controls.Add(CreerLabel("Client:", x, y));
+            var flowInputs = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top, AutoSize = true, WrapContents = true, Padding = new Padding(0, 0, 0, 10)
+            };
+
             cmbClient = new ComboBox
             {
-                Font = new Font("Segoe UI", 10),
-                Size = new Size(250, 28), Location = new Point(x + 65, y),
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = Color.FromArgb(45, 52, 70), ForeColor = Color.White
+                Font = new Font("Segoe UI", 10), Height = 35, DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = Color.FromArgb(20, 20, 20), ForeColor = Color.White
             };
-            panelForm.Controls.Add(cmbClient);
 
-            panelForm.Controls.Add(CreerLabel("Montant:", x + 340, y));
-            txtMontant = CreerTextBox(x + 415, y, 130); panelForm.Controls.Add(txtMontant);
-            txtMontant.TextChanged += (s, e) => CalculerApercu();
+            txtMontant = CreerInputText(); txtMontant.TextChanged += (s, e) => CalculerApercu();
+            txtTaux = CreerInputText(); txtTaux.TextChanged += (s, e) => CalculerApercu();
+            txtDuree = CreerInputText(); txtDuree.TextChanged += (s, e) => CalculerApercu();
+            txtNotes = CreerInputText();
 
-            panelForm.Controls.Add(CreerLabel("USD", x + 550, y));
-
-            y = 50;
-            panelForm.Controls.Add(CreerLabel("Taux (%):", x, y));
-            txtTaux = CreerTextBox(x + 80, y, 80); panelForm.Controls.Add(txtTaux);
-            txtTaux.TextChanged += (s, e) => CalculerApercu();
-
-            panelForm.Controls.Add(CreerLabel("Durée (mois):", x + 180, y));
-            txtDuree = CreerTextBox(x + 300, y, 80); panelForm.Controls.Add(txtDuree);
-            txtDuree.TextChanged += (s, e) => CalculerApercu();
+            flowInputs.Controls.Add(CreerChamp("Client", cmbClient, 250));
+            flowInputs.Controls.Add(CreerChamp("Montant (USD)", txtMontant, 150));
+            flowInputs.Controls.Add(CreerChamp("Taux (%)", txtTaux, 100));
+            flowInputs.Controls.Add(CreerChamp("Durée (mois)", txtDuree, 100));
+            flowInputs.Controls.Add(CreerChamp("Notes", txtNotes, 250));
 
             lblMensualite = new Label
             {
                 Text = "Mensualité: — USD", Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                ForeColor = Color.FromArgb(34, 197, 94), Location = new Point(x + 420, y + 3), AutoSize = true
+                ForeColor = Color.FromArgb(34, 197, 94), AutoSize = true, Margin = new Padding(20, 10, 20, 0)
             };
-            panelForm.Controls.Add(lblMensualite);
-
-            y = 90;
-            panelForm.Controls.Add(CreerLabel("Notes:", x, y));
-            txtNotes = CreerTextBox(x + 65, y, 300); panelForm.Controls.Add(txtNotes);
+            flowInputs.Controls.Add(lblMensualite);
 
             lblTotal = new Label
             {
                 Text = "Total à rembourser: — USD", Font = new Font("Segoe UI", 10),
-                ForeColor = Color.FromArgb(168, 85, 247), Location = new Point(x + 420, y + 3), AutoSize = true
+                ForeColor = Color.FromArgb(168, 85, 247), AutoSize = true, Margin = new Padding(0, 12, 0, 0)
             };
-            panelForm.Controls.Add(lblTotal);
+            flowInputs.Controls.Add(lblTotal);
+            panelForm.Controls.Add(flowInputs);
 
-            y = 135;
-            var btnCreer = CreerBouton("💰 Créer le prêt", Color.FromArgb(60, 130, 246), x, y);
-            btnCreer.Size = new Size(160, 38);
+            var flowBtns = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top, Height = 60, FlowDirection = FlowDirection.LeftToRight, Padding = new Padding(0, 15, 0, 0)
+            };
+
+            var btnCreer = CreerBouton("Créer le Prêt", Color.FromArgb(0, 112, 243), 160);
             btnCreer.Click += (s, e) => CreerPret();
-            panelForm.Controls.Add(btnCreer);
-
-            var btnApprouver = CreerBouton("✅ Approuver", Color.FromArgb(34, 197, 94), x + 180, y);
+            var btnApprouver = CreerBouton("Approuver", Color.FromArgb(34, 197, 94), 140);
             btnApprouver.Click += (s, e) => ChangerStatut("Approuve");
-            panelForm.Controls.Add(btnApprouver);
-
-            var btnDemarrer = CreerBouton("▶ Démarrer", Color.FromArgb(59, 130, 246), x + 320, y);
+            var btnDemarrer = CreerBouton("Démarrer", Color.FromArgb(168, 85, 247), 140);
             btnDemarrer.Click += (s, e) => ChangerStatut("EnCours");
-            panelForm.Controls.Add(btnDemarrer);
-
-            var btnRejeter = CreerBouton("❌ Rejeter", Color.FromArgb(239, 68, 68), x + 460, y);
+            var btnRejeter = CreerBouton("Rejeter", Color.FromArgb(239, 68, 68), 140);
             btnRejeter.Click += (s, e) => ChangerStatut("Rejete");
-            panelForm.Controls.Add(btnRejeter);
+
+            flowBtns.Controls.Add(btnCreer);
+            flowBtns.Controls.Add(btnApprouver);
+            flowBtns.Controls.Add(btnDemarrer);
+            flowBtns.Controls.Add(btnRejeter);
+            panelForm.Controls.Add(flowBtns);
 
             this.Controls.Add(panelForm);
 
@@ -215,12 +206,12 @@ namespace PretBancaire.Forms
                 var mensualite = Pret.CalculerMensualite(m, t, d);
                 var total = mensualite * d;
                 lblMensualite.Text = $"Mensualité: {mensualite:N2} USD";
-                lblTotal.Text = $"Total à rembourser: {total:N2} USD";
+                lblTotal.Text = $"Total Ã  rembourser: {total:N2} USD";
             }
             else
             {
                 lblMensualite.Text = "Mensualité: — USD";
-                lblTotal.Text = "Total à rembourser: — USD";
+                lblTotal.Text = "Total Ã  rembourser: — USD";
             }
         }
 
@@ -281,14 +272,38 @@ namespace PretBancaire.Forms
         }
 
         // === Helpers ===
-        private static Label CreerLabel(string text, int x, int y) => new()
-        { Text = text, Font = new Font("Segoe UI", 10), ForeColor = Color.FromArgb(200, 210, 225), Location = new Point(x, y + 3), AutoSize = true };
+        private Panel CreerChamp(string texteLabel, Control input, int largeur)
+        {
+            var p = new Panel { Width = largeur, Height = 65, Margin = new Padding(0, 0, 15, 15) };
+            var lbl = new Label { Text = texteLabel.ToUpper(), Dock = DockStyle.Top, Height = 22, ForeColor = Color.FromArgb(161, 161, 170), Font = new Font("Segoe UI", 8, FontStyle.Bold) };
+            input.Dock = DockStyle.Bottom;
+            input.Height = 35;
+            input.Font = new Font("Segoe UI", 10);
+            p.Controls.Add(input);
+            p.Controls.Add(lbl);
+            return p;
+        }
 
-        private static TextBox CreerTextBox(int x, int y, int w) => new()
-        { Font = new Font("Segoe UI", 10), Size = new Size(w, 28), Location = new Point(x, y), BackColor = Color.FromArgb(45, 52, 70), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+        private static TextBox CreerInputText() => new()
+        {
+            Font = new Font("Segoe UI", 10),
+            BackColor = Color.FromArgb(20, 20, 20),
+            ForeColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle
+        };
 
-        private static Button CreerBouton(string text, Color bg, int x, int y)
-        { var b = new Button { Text = text, Font = new Font("Segoe UI", 10, FontStyle.Bold), Size = new Size(130, 38), Location = new Point(x, y), BackColor = bg, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand }; b.FlatAppearance.BorderSize = 0; return b; }
+        private static Button CreerBouton(string text, Color bg, int w)
+        {
+            var b = new Button
+            {
+                Text = text, Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Size = new Size(w, 40), Margin = new Padding(10, 0, 0, 0),
+                BackColor = bg, ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand
+            };
+            b.FlatAppearance.BorderSize = 0;
+            return b;
+        }
     }
 
     /// <summary>
@@ -302,5 +317,8 @@ namespace PretBancaire.Forms
         public override string ToString() => Display;
     }
 }
+
+
+
 
 

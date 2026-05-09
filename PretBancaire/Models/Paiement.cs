@@ -1,4 +1,4 @@
-namespace PretBancaire.Models
+﻿namespace PretBancaire.Models
 {
     /// <summary>
     /// Représente un paiement (remboursement) effectué sur un prêt.
@@ -30,3 +30,4 @@ namespace PretBancaire.Models
             $"Paiement #{Id} - {Montant:N2} USD ({ModePaiementLibelle})";
     }
 }
+
