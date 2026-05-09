@@ -27,3 +27,4 @@ d:\Nouveau dossier\Pret-bancaire\PretBancaire\obj\Debug\net8.0-windows\refint\Pr
 d:\Nouveau dossier\Pret-bancaire\PretBancaire\obj\Debug\net8.0-windows\PretBancaire.pdb
 d:\Nouveau dossier\Pret-bancaire\PretBancaire\obj\Debug\net8.0-windows\PretBancaire.genruntimeconfig.cache
 d:\Nouveau dossier\Pret-bancaire\PretBancaire\obj\Debug\net8.0-windows\ref\PretBancaire.dll
+d:\Nouveau dossier\Pret-bancaire\PretBancaire\obj\Debug\net8.0-windows\PretBancaire.sourcelink.json

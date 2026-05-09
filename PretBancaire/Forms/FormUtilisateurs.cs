@@ -91,39 +91,48 @@ namespace PretBancaire.Forms
             try
             {
                 dgv.DataSource = null; dgv.Columns.Clear();
+                dgv.AutoGenerateColumns = true;
                 dgv.DataSource = _service.GetTousUtilisateurs();
 
-                if (dgv.Columns.Count > 0)
+                foreach (DataGridViewColumn col in dgv.Columns)
                 {
-                    dgv.Columns["Id"].HeaderText = "ID"; dgv.Columns["Id"].Width = 50;
-                    dgv.Columns["Nom"].HeaderText = "Nom";
-                    dgv.Columns["Prenom"].HeaderText = "Prénom";
-                    dgv.Columns["Login"].HeaderText = "Login";
-                    dgv.Columns["Role"].HeaderText = "Rôle";
-                    dgv.Columns["DateCreation"].HeaderText = "Créé le";
-                    dgv.Columns["DateCreation"].DefaultCellStyle.Format = "dd/MM/yyyy";
-                    dgv.Columns["Actif"].HeaderText = "Actif";
-
-                    foreach (var c in new[] { "MotDePasse", "NomComplet", "EstAdmin" })
-                        if (dgv.Columns.Contains(c)) dgv.Columns[c].Visible = false;
+                    switch (col.Name)
+                    {
+                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
+                        case "Nom": col.HeaderText = "Nom"; break;
+                        case "Prenom": col.HeaderText = "Prénom"; break;
+                        case "Login": col.HeaderText = "Login"; break;
+                        case "Role": col.HeaderText = "Rôle"; break;
+                        case "DateCreation": col.HeaderText = "Créé le"; col.DefaultCellStyle.Format = "dd/MM/yyyy"; break;
+                        case "Actif": col.HeaderText = "Actif"; break;
+                        case "MotDePasse":
+                        case "NomComplet":
+                        case "EstAdmin":
+                            col.Visible = false;
+                            break;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void SelectionChanged()
         {
-            if (dgv.CurrentRow?.DataBoundItem is Utilisateur u)
+            try
             {
-                _selectedId = u.Id;
-                txtNom.Text = u.Nom; txtPrenom.Text = u.Prenom;
-                txtLogin.Text = u.Login;
-                cmbRole.SelectedItem = u.Role;
-                txtMdp.Clear();
+                if (dgv.CurrentRow?.DataBoundItem is Utilisateur u)
+                {
+                    _selectedId = u.Id;
+                    txtNom.Text = u.Nom; txtPrenom.Text = u.Prenom;
+                    txtLogin.Text = u.Login;
+                    cmbRole.SelectedItem = u.Role;
+                    txtMdp.Clear();
+                }
             }
+            catch { }
         }
 
         private void Sauvegarder()
@@ -176,7 +185,7 @@ namespace PretBancaire.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -206,3 +215,5 @@ namespace PretBancaire.Forms
         { var b = new Button { Text = t, Font = new Font("Segoe UI", 10, FontStyle.Bold), Size = new Size(130, 35), Location = new Point(x, y), BackColor = bg, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand }; b.FlatAppearance.BorderSize = 0; return b; }
     }
 }
+
+

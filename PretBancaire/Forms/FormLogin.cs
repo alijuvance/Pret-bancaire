@@ -17,32 +17,59 @@ namespace PretBancaire.Forms
             this.SuspendLayout();
 
             // === Configuration du formulaire ===
-            this.Text = "🏦 Système de Prêt Bancaire — Connexion";
-            this.Size = new Size(480, 400);
+            this.Text = "Système de Prêt Bancaire — Connexion";
+            this.Size = new Size(480, 480);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.BackColor = Color.FromArgb(24, 28, 40);
 
+            // === Icône de l'application ===
+            try
+            {
+                var icoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "logo.ico");
+                if (File.Exists(icoPath)) this.Icon = new Icon(icoPath);
+            }
+            catch { }
+
             // === Panel central ===
             var panelCenter = new Panel
             {
-                Size = new Size(380, 300),
+                Size = new Size(380, 380),
                 Location = new Point(50, 40),
                 BackColor = Color.FromArgb(32, 38, 55)
             };
             this.Controls.Add(panelCenter);
 
+            // === Logo ===
+            try
+            {
+                var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "logo.png");
+                if (File.Exists(logoPath))
+                {
+                    var picLogo = new PictureBox
+                    {
+                        Image = Image.FromFile(logoPath),
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        Size = new Size(70, 70),
+                        Location = new Point(155, 10),
+                        BackColor = Color.Transparent
+                    };
+                    panelCenter.Controls.Add(picLogo);
+                }
+            }
+            catch { }
+
             // === Titre ===
             var lblTitre = new Label
             {
-                Text = "🏦 Prêt Bancaire",
+                Text = "Prêt Bancaire",
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = Color.FromArgb(100, 180, 255),
                 AutoSize = false,
                 Size = new Size(380, 40),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Location = new Point(0, 15)
+                Location = new Point(0, 85)
             };
             panelCenter.Controls.Add(lblTitre);
 
@@ -54,7 +81,7 @@ namespace PretBancaire.Forms
                 AutoSize = false,
                 Size = new Size(380, 20),
                 TextAlign = ContentAlignment.MiddleCenter,
-                Location = new Point(0, 55)
+                Location = new Point(0, 125)
             };
             panelCenter.Controls.Add(lblSousTitre);
 
@@ -64,7 +91,7 @@ namespace PretBancaire.Forms
                 Text = "Identifiant",
                 Font = new Font("Segoe UI", 10),
                 ForeColor = Color.FromArgb(200, 210, 225),
-                Location = new Point(40, 95),
+                Location = new Point(40, 160),
                 AutoSize = true
             };
             panelCenter.Controls.Add(lblLogin);
@@ -74,7 +101,7 @@ namespace PretBancaire.Forms
                 Name = "txtLogin",
                 Font = new Font("Segoe UI", 11),
                 Size = new Size(300, 30),
-                Location = new Point(40, 118),
+                Location = new Point(40, 183),
                 BackColor = Color.FromArgb(45, 52, 70),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle
@@ -87,7 +114,7 @@ namespace PretBancaire.Forms
                 Text = "Mot de passe",
                 Font = new Font("Segoe UI", 10),
                 ForeColor = Color.FromArgb(200, 210, 225),
-                Location = new Point(40, 155),
+                Location = new Point(40, 220),
                 AutoSize = true
             };
             panelCenter.Controls.Add(lblMdp);
@@ -97,7 +124,7 @@ namespace PretBancaire.Forms
                 Name = "txtMdp",
                 Font = new Font("Segoe UI", 11),
                 Size = new Size(300, 30),
-                Location = new Point(40, 178),
+                Location = new Point(40, 243),
                 BackColor = Color.FromArgb(45, 52, 70),
                 ForeColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
@@ -112,7 +139,7 @@ namespace PretBancaire.Forms
                 Text = "🔐 Se connecter",
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 Size = new Size(300, 40),
-                Location = new Point(40, 225),
+                Location = new Point(40, 290),
                 BackColor = Color.FromArgb(60, 130, 246),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -130,7 +157,7 @@ namespace PretBancaire.Forms
                 ForeColor = Color.FromArgb(255, 100, 100),
                 AutoSize = false,
                 Size = new Size(300, 20),
-                Location = new Point(40, 272),
+                Location = new Point(40, 340),
                 TextAlign = ContentAlignment.MiddleCenter
             };
             panelCenter.Controls.Add(lblErreur);

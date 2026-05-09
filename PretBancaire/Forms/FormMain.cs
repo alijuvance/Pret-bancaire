@@ -21,11 +21,19 @@ namespace PretBancaire.Forms
             this.SuspendLayout();
 
             // === Form ===
-            this.Text = "🏦 Système de Prêt Bancaire";
+            this.Text = "Système de Prêt Bancaire";
             this.Size = new Size(1200, 750);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(24, 28, 40);
             this.MinimumSize = new Size(1000, 600);
+
+            // === Icône ===
+            try
+            {
+                var icoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "logo.ico");
+                if (File.Exists(icoPath)) this.Icon = new Icon(icoPath);
+            }
+            catch { }
 
             // === Sidebar ===
             var sidebar = new Panel
@@ -36,17 +44,35 @@ namespace PretBancaire.Forms
             };
             this.Controls.Add(sidebar);
 
-            // Logo
+            // Logo image dans la sidebar
+            var panelLogo = new Panel { Dock = DockStyle.Top, Height = 70, BackColor = Color.Transparent };
+            try
+            {
+                var logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Resources", "logo.png");
+                if (File.Exists(logoPath))
+                {
+                    var picLogo = new PictureBox
+                    {
+                        Image = Image.FromFile(logoPath),
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        Size = new Size(40, 40),
+                        Location = new Point(15, 15),
+                        BackColor = Color.Transparent
+                    };
+                    panelLogo.Controls.Add(picLogo);
+                }
+            }
+            catch { }
             var lblLogo = new Label
             {
-                Text = "🏦 Prêt Bancaire",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Text = "Prêt Bancaire",
+                Font = new Font("Segoe UI", 13, FontStyle.Bold),
                 ForeColor = Color.FromArgb(100, 180, 255),
-                Dock = DockStyle.Top,
-                Height = 60,
-                TextAlign = ContentAlignment.MiddleCenter
+                Location = new Point(60, 22),
+                AutoSize = true
             };
-            sidebar.Controls.Add(lblLogo);
+            panelLogo.Controls.Add(lblLogo);
+            sidebar.Controls.Add(panelLogo);
 
             // Utilisateur connecté
             var user = AuthService.UtilisateurConnecte;

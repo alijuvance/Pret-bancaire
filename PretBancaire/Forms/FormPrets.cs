@@ -164,32 +164,35 @@ namespace PretBancaire.Forms
             {
                 dgv.DataSource = null;
                 dgv.Columns.Clear();
+                dgv.AutoGenerateColumns = true;
                 var prets = _service.GetTousPrets();
                 dgv.DataSource = prets;
 
-                if (dgv.Columns.Count > 0)
+                foreach (DataGridViewColumn col in dgv.Columns)
                 {
-                    dgv.Columns["Id"].HeaderText = "ID"; dgv.Columns["Id"].Width = 50;
-                    dgv.Columns["NomClient"].HeaderText = "Client";
-                    dgv.Columns["Montant"].HeaderText = "Montant";
-                    dgv.Columns["Montant"].DefaultCellStyle.Format = "N2";
-                    dgv.Columns["TauxInteret"].HeaderText = "Taux %";
-                    dgv.Columns["DureeMois"].HeaderText = "Durée";
-                    dgv.Columns["Mensualite"].HeaderText = "Mensualité";
-                    dgv.Columns["Mensualite"].DefaultCellStyle.Format = "N2";
-                    dgv.Columns["MontantTotal"].HeaderText = "Total";
-                    dgv.Columns["MontantTotal"].DefaultCellStyle.Format = "N2";
-                    dgv.Columns["StatutLibelle"].HeaderText = "Statut";
-                    dgv.Columns["DateDemande"].HeaderText = "Date";
-                    dgv.Columns["DateDemande"].DefaultCellStyle.Format = "dd/MM/yyyy";
-
-                    foreach (var col in new[] { "ClientId", "Statut", "DateApprobation", "Notes" })
-                        if (dgv.Columns.Contains(col)) dgv.Columns[col].Visible = false;
+                    switch (col.Name)
+                    {
+                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
+                        case "NomClient": col.HeaderText = "Client"; break;
+                        case "Montant": col.HeaderText = "Montant"; col.DefaultCellStyle.Format = "N2"; break;
+                        case "TauxInteret": col.HeaderText = "Taux %"; break;
+                        case "DureeMois": col.HeaderText = "Durée"; break;
+                        case "Mensualite": col.HeaderText = "Mensualité"; col.DefaultCellStyle.Format = "N2"; break;
+                        case "MontantTotal": col.HeaderText = "Total"; col.DefaultCellStyle.Format = "N2"; break;
+                        case "StatutLibelle": col.HeaderText = "Statut"; break;
+                        case "DateDemande": col.HeaderText = "Date"; col.DefaultCellStyle.Format = "dd/MM/yyyy"; break;
+                        case "ClientId":
+                        case "Statut":
+                        case "DateApprobation":
+                        case "Notes":
+                            col.Visible = false;
+                            break;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -253,7 +256,7 @@ namespace PretBancaire.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -273,7 +276,7 @@ namespace PretBancaire.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -299,3 +302,5 @@ namespace PretBancaire.Forms
         public override string ToString() => Display;
     }
 }
+
+

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj": {}
+    "D:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj": {}
   },
   "projects": {
-    "d:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj": {
+    "D:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj",
+        "projectUniqueName": "D:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj",
         "projectName": "PretBancaire",
-        "projectPath": "d:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj",
+        "projectPath": "D:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\PretBancaire.csproj",
         "packagesPath": "C:\\Users\\alijuvance\\.nuget\\packages\\",
-        "outputPath": "d:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\obj\\",
+        "outputPath": "D:\\Nouveau dossier\\Pret-bancaire\\PretBancaire\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\alijuvance\\AppData\\Roaming\\NuGet\\NuGet.Config"

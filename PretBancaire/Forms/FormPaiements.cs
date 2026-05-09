@@ -132,54 +132,60 @@ namespace PretBancaire.Forms
                 var prets = _pretService.GetPretsByStatut("EnCours");
                 dgvPrets.DataSource = null;
                 dgvPrets.Columns.Clear();
+                dgvPrets.AutoGenerateColumns = true;
                 dgvPrets.DataSource = prets;
 
-                if (dgvPrets.Columns.Count > 0)
+                foreach (DataGridViewColumn col in dgvPrets.Columns)
                 {
-                    dgvPrets.Columns["Id"].HeaderText = "ID"; dgvPrets.Columns["Id"].Width = 50;
-                    dgvPrets.Columns["NomClient"].HeaderText = "Client";
-                    dgvPrets.Columns["Montant"].HeaderText = "Montant"; dgvPrets.Columns["Montant"].DefaultCellStyle.Format = "N2";
-                    dgvPrets.Columns["Mensualite"].HeaderText = "Mensualité"; dgvPrets.Columns["Mensualite"].DefaultCellStyle.Format = "N2";
-                    dgvPrets.Columns["MontantTotal"].HeaderText = "Total"; dgvPrets.Columns["MontantTotal"].DefaultCellStyle.Format = "N2";
-                    dgvPrets.Columns["DureeMois"].HeaderText = "Durée";
-
-                    foreach (var c in new[] { "ClientId", "TauxInteret", "Statut", "StatutLibelle", "DateDemande", "DateApprobation", "Notes" })
-                        if (dgvPrets.Columns.Contains(c)) dgvPrets.Columns[c].Visible = false;
+                    switch (col.Name)
+                    {
+                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
+                        case "NomClient": col.HeaderText = "Client"; break;
+                        case "Montant": col.HeaderText = "Montant"; col.DefaultCellStyle.Format = "N2"; break;
+                        case "Mensualite": col.HeaderText = "Mensualité"; col.DefaultCellStyle.Format = "N2"; break;
+                        case "MontantTotal": col.HeaderText = "Total"; col.DefaultCellStyle.Format = "N2"; break;
+                        case "DureeMois": col.HeaderText = "Durée"; break;
+                        default: col.Visible = false; break;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void PretSelectionne()
         {
-            if (dgvPrets.CurrentRow?.DataBoundItem is Pret pret)
+            try
             {
+                if (dgvPrets.CurrentRow?.DataBoundItem is not Pret pret) return;
+
                 _selectedPretId = pret.Id;
                 var restant = _pretService.GetMontantRestant(pret.Id);
                 lblRestant.Text = $"Restant: {restant:N2} USD";
-                lblInfoPret.Text = $"💰 Paiements pour le prêt #{pret.Id} — {pret.NomClient}";
+                lblInfoPret.Text = $"Paiements pour le prêt #{pret.Id} — {pret.NomClient}";
 
-                // Charger les paiements
                 var paiements = _service.GetPaiementsByPret(pret.Id);
                 dgvPaiements.DataSource = null;
                 dgvPaiements.Columns.Clear();
+                dgvPaiements.AutoGenerateColumns = true;
                 dgvPaiements.DataSource = paiements;
 
-                if (dgvPaiements.Columns.Count > 0)
+                foreach (DataGridViewColumn col in dgvPaiements.Columns)
                 {
-                    dgvPaiements.Columns["Id"].HeaderText = "ID"; dgvPaiements.Columns["Id"].Width = 50;
-                    dgvPaiements.Columns["Montant"].HeaderText = "Montant"; dgvPaiements.Columns["Montant"].DefaultCellStyle.Format = "N2";
-                    dgvPaiements.Columns["DatePaiement"].HeaderText = "Date"; dgvPaiements.Columns["DatePaiement"].DefaultCellStyle.Format = "dd/MM/yyyy";
-                    dgvPaiements.Columns["ModePaiementLibelle"].HeaderText = "Mode";
-                    dgvPaiements.Columns["Reference"].HeaderText = "Référence";
-
-                    foreach (var c in new[] { "PretId", "ModePaiement", "Notes" })
-                        if (dgvPaiements.Columns.Contains(c)) dgvPaiements.Columns[c].Visible = false;
+                    switch (col.Name)
+                    {
+                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
+                        case "Montant": col.HeaderText = "Montant"; col.DefaultCellStyle.Format = "N2"; break;
+                        case "DatePaiement": col.HeaderText = "Date"; col.DefaultCellStyle.Format = "dd/MM/yyyy"; break;
+                        case "ModePaiementLibelle": col.HeaderText = "Mode"; break;
+                        case "Reference": col.HeaderText = "Référence"; break;
+                        default: col.Visible = false; break;
+                    }
                 }
             }
+            catch { }
         }
 
         private void EnregistrerPaiement()
@@ -221,7 +227,7 @@ namespace PretBancaire.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -255,3 +261,5 @@ namespace PretBancaire.Forms
         { Font = new Font("Segoe UI", 10), Size = new Size(w, 28), Location = new Point(x, y), BackColor = Color.FromArgb(45, 52, 70), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
     }
 }
+
+

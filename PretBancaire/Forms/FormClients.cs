@@ -70,7 +70,7 @@ namespace PretBancaire.Forms
             dgv.EnableHeadersVisualStyles = false;
             dgv.ColumnHeadersHeight = 40;
             dgv.RowTemplate.Height = 35;
-            dgv.SelectionChanged += (s, e) => SelectionChanged();
+            dgv.SelectionChanged += OnSelectionChanged;
             this.Controls.Add(dgv);
 
             // === Panel de formulaire en bas ===
@@ -125,35 +125,42 @@ namespace PretBancaire.Forms
         {
             try
             {
+                dgv.SelectionChanged -= OnSelectionChanged;
                 var clients = _service.GetTousClients();
                 dgv.DataSource = null;
                 dgv.Columns.Clear();
+                dgv.AutoGenerateColumns = true;
                 dgv.DataSource = clients;
 
-                // Configurer les colonnes visibles
-                if (dgv.Columns.Count > 0)
+                // Configurer les colonnes visibles (accès null-safe)
+                foreach (DataGridViewColumn col in dgv.Columns)
                 {
-                    dgv.Columns["Id"].HeaderText = "ID";
-                    dgv.Columns["Id"].Width = 50;
-                    dgv.Columns["Nom"].HeaderText = "Nom";
-                    dgv.Columns["Prenom"].HeaderText = "Prénom";
-                    dgv.Columns["Cin"].HeaderText = "CIN";
-                    dgv.Columns["Telephone"].HeaderText = "Téléphone";
-                    dgv.Columns["Email"].HeaderText = "Email";
-                    dgv.Columns["DateNaissance"].HeaderText = "Naissance";
-                    dgv.Columns["DateNaissance"].DefaultCellStyle.Format = "dd/MM/yyyy";
-
-                    // Masquer certaines colonnes
-                    if (dgv.Columns.Contains("Adresse")) dgv.Columns["Adresse"].Visible = false;
-                    if (dgv.Columns.Contains("DateInscription")) dgv.Columns["DateInscription"].Visible = false;
-                    if (dgv.Columns.Contains("Actif")) dgv.Columns["Actif"].Visible = false;
-                    if (dgv.Columns.Contains("NomComplet")) dgv.Columns["NomComplet"].Visible = false;
-                    if (dgv.Columns.Contains("Age")) dgv.Columns["Age"].Visible = false;
+                    switch (col.Name)
+                    {
+                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
+                        case "Nom": col.HeaderText = "Nom"; break;
+                        case "Prenom": col.HeaderText = "Prénom"; break;
+                        case "Cin": col.HeaderText = "CIN"; break;
+                        case "Telephone": col.HeaderText = "Téléphone"; break;
+                        case "Email": col.HeaderText = "Email"; break;
+                        case "DateNaissance":
+                            col.HeaderText = "Naissance";
+                            col.DefaultCellStyle.Format = "dd/MM/yyyy";
+                            break;
+                        case "Adresse":
+                        case "DateInscription":
+                        case "Actif":
+                        case "NomComplet":
+                        case "Age":
+                            col.Visible = false;
+                            break;
+                    }
                 }
+                dgv.SelectionChanged += OnSelectionChanged;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur lors du chargement: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -168,7 +175,7 @@ namespace PretBancaire.Forms
             catch { }
         }
 
-        private void SelectionChanged()
+        private void OnSelectionChanged(object? sender, EventArgs e)
         {
             if (dgv.CurrentRow?.DataBoundItem is Client c)
             {
@@ -224,7 +231,7 @@ namespace PretBancaire.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -279,3 +286,5 @@ namespace PretBancaire.Forms
         }
     }
 }
+
+

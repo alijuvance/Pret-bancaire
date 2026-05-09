@@ -15,7 +15,7 @@ namespace PretBancaire.Data
         private const string Server = "localhost";
         private const string Database = "pret_bancaire";
         private const string User = "root";
-        private const string Password = "";  // Mot de passe MySQL (vide par défaut sur XAMPP/WAMP)
+        private const string Password = "ali9114";  // Mot de passe MySQL
         private const int Port = 3306;
 
         /// <summary>
