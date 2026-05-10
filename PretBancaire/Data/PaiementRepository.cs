@@ -1,19 +1,37 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using PretBancaire.Models;
+using System;
+using System.Collections.Generic;
 
 namespace PretBancaire.Data
 {
-    /// <summary>
-    /// Repository pour les opérations CRUD sur la table 'paiements'.
-    /// </summary>
     public class PaiementRepository
     {
-        public List<Paiement> GetByPretId(int pretId)
+        public List<Paiement> GetAll()
         {
             var liste = new List<Paiement>();
             using var conn = DatabaseConnection.GetConnection();
             var cmd = new MySqlCommand(
-                "SELECT * FROM paiements WHERE pret_id = @pid ORDER BY date_paiement DESC", conn);
+                @"SELECT p.*, c.nom as nom_client, c.prenom as prenom_client 
+                  FROM paiements p 
+                  JOIN prets pr ON p.pret_id = pr.id 
+                  JOIN clients c ON pr.client_id = c.id 
+                  ORDER BY p.date_paiement DESC", conn);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var p = MapToPaiement(reader);
+                p.NomClient = $"{reader["nom_client"]} {reader["prenom_client"]}";
+                liste.Add(p);
+            }
+            return liste;
+        }
+
+        public List<Paiement> GetByPretId(int pretId)
+        {
+            var liste = new List<Paiement>();
+            using var conn = DatabaseConnection.GetConnection();
+            var cmd = new MySqlCommand("SELECT * FROM paiements WHERE pret_id = @pid ORDER BY date_paiement DESC", conn);
             cmd.Parameters.AddWithValue("@pid", pretId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read()) liste.Add(MapToPaiement(reader));
@@ -35,21 +53,14 @@ namespace PretBancaire.Data
             return Convert.ToInt32(cmd.ExecuteScalar());
         }
 
-        /// <summary>
-        /// Calcule le total des paiements pour un prêt donné.
-        /// </summary>
         public decimal GetTotalPaye(int pretId)
         {
             using var conn = DatabaseConnection.GetConnection();
-            var cmd = new MySqlCommand(
-                "SELECT COALESCE(SUM(montant), 0) FROM paiements WHERE pret_id = @pid", conn);
+            var cmd = new MySqlCommand("SELECT COALESCE(SUM(montant), 0) FROM paiements WHERE pret_id = @pid", conn);
             cmd.Parameters.AddWithValue("@pid", pretId);
             return Convert.ToDecimal(cmd.ExecuteScalar());
         }
 
-        /// <summary>
-        /// Calcule le montant total de tous les remboursements.
-        /// </summary>
         public decimal GetTotalRemboursements()
         {
             using var conn = DatabaseConnection.GetConnection();
@@ -57,9 +68,6 @@ namespace PretBancaire.Data
             return Convert.ToDecimal(cmd.ExecuteScalar());
         }
 
-        /// <summary>
-        /// Compte le nombre total de paiements.
-        /// </summary>
         public int Count()
         {
             using var conn = DatabaseConnection.GetConnection();
@@ -82,4 +90,3 @@ namespace PretBancaire.Data
         }
     }
 }
-

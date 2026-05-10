@@ -1,105 +1,117 @@
-﻿﻿using PretBancaire.Models;
+using PretBancaire.Models;
 using PretBancaire.Services;
+using PretBancaire.Utils;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace PretBancaire.Forms
 {
-    /// <summary>
-    /// Formulaire de gestion des utilisateurs (Admin uniquement).
-    /// </summary>
     public class FormUtilisateurs : UserControl
     {
         private readonly AuthService _service = new();
         private DataGridView dgv = null!;
-        private TextBox txtNom = null!, txtPrenom = null!, txtLogin = null!, txtMdp = null!;
+        private TextBox txtLogin = null!, txtNom = null!, txtPrenom = null!, txtMdp = null!;
         private ComboBox cmbRole = null!;
+        private CheckBox chkActif = null!;
         private int? _selectedId = null;
 
         public FormUtilisateurs()
         {
-            this.BackColor = Color.FromArgb(0, 0, 0);
+            this.BackColor = UIHelper.BgDark;
             ConstruireInterface();
             ChargerDonnees();
         }
 
         private void ConstruireInterface()
         {
-            // === Grille ===
-            dgv = new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.FromArgb(0, 0, 0),
-                ForeColor = Color.White,
-                GridColor = Color.FromArgb(20, 20, 20),
-                BorderStyle = BorderStyle.None,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                ReadOnly = true, AllowUserToAddRows = false, RowHeadersVisible = false,
-                Font = new Font("Segoe UI", 10)
-            };
-            dgv.DefaultCellStyle.BackColor = Color.FromArgb(10, 10, 10);
-            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 112, 243);
-            dgv.DefaultCellStyle.Padding = new Padding(10, 5, 10, 5);
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 0, 0);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(161, 161, 170);
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dgv.EnableHeadersVisualStyles = false;
-            dgv.ColumnHeadersHeight = 50; dgv.RowTemplate.Height = 45;
-            dgv.SelectionChanged += (s, e) => SelectionChanged();
+            var panelTop = new Panel { Dock = DockStyle.Top, Height = 55, BackColor = Color.Transparent, Padding = new Padding(15, 10, 15, 0) };
+            this.Controls.Add(panelTop);
+
+            dgv = new DataGridView();
+            UIHelper.FormaterGrid(dgv);
+            dgv.Dock = DockStyle.Fill;
+            dgv.SelectionChanged += OnSelectionChanged;
             this.Controls.Add(dgv);
 
-            // === Formulaire ===
             var panelForm = new Panel
             {
-                Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                BackColor = Color.FromArgb(10, 10, 10), Padding = new Padding(20)
+                Dock = DockStyle.Bottom,
+                Height = 170,
+                BackColor = UIHelper.BgCard,
+                Padding = new Padding(20, 12, 20, 12)
             };
 
             var flowInputs = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top, AutoSize = true, WrapContents = true, Padding = new Padding(0, 0, 0, 10)
+                Dock = DockStyle.Top,
+                Height = 72,
+                WrapContents = true,
+                Padding = new Padding(0)
             };
 
-            txtNom = CreerInputText();
-            txtPrenom = CreerInputText();
-            txtLogin = CreerInputText();
-            txtMdp = CreerInputText();
-            txtMdp.PasswordChar = '●';
-            
+            txtNom = UIHelper.CreerTextBox(150);
+            txtPrenom = UIHelper.CreerTextBox(150);
+            txtLogin = UIHelper.CreerTextBox(150);
+            txtMdp = UIHelper.CreerTextBox(150);
+            txtMdp.PasswordChar = (char)8226;
+
             cmbRole = new ComboBox
             {
-                Font = new Font("Segoe UI", 10), Height = 35,
+                Font = new Font("Segoe UI", 10),
+                Width = 130,
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = Color.FromArgb(20, 20, 20), ForeColor = Color.White
+                BackColor = UIHelper.BgInput,
+                ForeColor = UIHelper.TextPrimary
             };
-            cmbRole.Items.AddRange(new[] { "Agent", "Admin" });
-            cmbRole.SelectedIndex = 0;
+            cmbRole.Items.AddRange(new[] { "Admin", "Agent" });
+            cmbRole.SelectedIndex = 1;
 
-            flowInputs.Controls.Add(CreerChamp("Nom", txtNom, 200));
-            flowInputs.Controls.Add(CreerChamp("Prénom", txtPrenom, 200));
-            flowInputs.Controls.Add(CreerChamp("Login", txtLogin, 200));
-            flowInputs.Controls.Add(CreerChamp("Mot de passe", txtMdp, 200));
-            flowInputs.Controls.Add(CreerChamp("RÃ´le", cmbRole, 150));
+            chkActif = new CheckBox
+            {
+                Text = "Actif",
+                ForeColor = UIHelper.TextPrimary,
+                Font = new Font("Segoe UI", 10),
+                Checked = true,
+                AutoSize = true,
+                Margin = new Padding(10, 30, 0, 0)
+            };
+
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Nom", txtNom, 150));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Prenom", txtPrenom, 150));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Login", txtLogin, 150));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Mot de passe", txtMdp, 150));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Role", cmbRole, 130));
+            flowInputs.Controls.Add(chkActif);
+
             panelForm.Controls.Add(flowInputs);
 
             var flowBtns = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top, Height = 60, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(0, 15, 0, 0)
+                Dock = DockStyle.Bottom,
+                Height = 52,
+                FlowDirection = FlowDirection.RightToLeft,
+                Padding = new Padding(0, 8, 0, 0)
             };
 
-            var btnNew = CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
-            btnNew.Click += (s, e) => Nouveau();
-            var btnDel = CreerBouton("Supprimer", Color.FromArgb(239, 68, 68), 120);
-            btnDel.Click += (s, e) => Supprimer();
-            var btnSave = CreerBouton("Enregistrer", Color.FromArgb(0, 112, 243), 140);
-            btnSave.Click += (s, e) => Sauvegarder();
+            var btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
+            btnNouveau.Click += (s, e) => Nouveau();
 
-            flowBtns.Controls.Add(btnNew);
-            flowBtns.Controls.Add(btnDel);
-            flowBtns.Controls.Add(btnSave);
+            var btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 140);
+            btnEnregistrer.Click += (s, e) => Sauvegarder();
+
+            var btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentGreen, 130);
+            btnModifier.Click += (s, e) => { if (_selectedId.HasValue) txtNom.Focus(); else MessageBox.Show("Selectionnez un utilisateur.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); };
+
+            var btnSupprimer = UIHelper.CreerBouton("Supprimer", UIHelper.AccentRed, 120);
+            btnSupprimer.Click += (s, e) => SupprimerUtilisateur();
+
+            flowBtns.Controls.Add(btnNouveau);
+            flowBtns.Controls.Add(btnEnregistrer);
+            flowBtns.Controls.Add(btnModifier);
+            flowBtns.Controls.Add(btnSupprimer);
+
             panelForm.Controls.Add(flowBtns);
-
             this.Controls.Add(panelForm);
         }
 
@@ -107,157 +119,155 @@ namespace PretBancaire.Forms
         {
             try
             {
-                dgv.DataSource = null; dgv.Columns.Clear();
+                dgv.SelectionChanged -= OnSelectionChanged;
+                var users = _service.GetTousUtilisateurs();
+                dgv.DataSource = null;
+                dgv.Columns.Clear();
                 dgv.AutoGenerateColumns = true;
-                dgv.DataSource = _service.GetTousUtilisateurs();
+                dgv.DataSource = users;
 
                 foreach (DataGridViewColumn col in dgv.Columns)
                 {
                     switch (col.Name)
                     {
-                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
-                        case "Nom": col.HeaderText = "Nom"; break;
-                        case "Prenom": col.HeaderText = "Prénom"; break;
-                        case "Login": col.HeaderText = "Login"; break;
-                        case "Role": col.HeaderText = "RÃ´le"; break;
-                        case "DateCreation": col.HeaderText = "Créé le"; col.DefaultCellStyle.Format = "dd/MM/yyyy"; break;
-                        case "Actif": col.HeaderText = "Actif"; break;
+                        case "Id":
+                            col.HeaderText = "ID";
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotIdentity);
+                            col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                            col.Width = 70;
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                            break;
+                        case "Nom": 
+                            col.HeaderText = "Nom"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotPerson);
+                            break;
+                        case "Prenom": 
+                            col.HeaderText = "Pr\u00e9nom"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotPerson);
+                            break;
+                        case "Login": 
+                            col.HeaderText = "Identifiant"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotSecurity);
+                            break;
+                        case "Role": 
+                            col.HeaderText = "R\u00f4le"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotStatus);
+                            break;
+                        case "Actif": 
+                            col.HeaderText = "Actif"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotStatus);
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter; 
+                            break;
+                        case "DateCreation":
+                            col.HeaderText = "Date Cr\u00e9ation";
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotDate);
+                            col.DefaultCellStyle.Format = "dd/MM/yyyy";
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                            break;
                         case "MotDePasse":
                         case "NomComplet":
-                        case "EstAdmin":
                             col.Visible = false;
                             break;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
-        private void SelectionChanged()
-        {
-            try
-            {
-                if (dgv.CurrentRow?.DataBoundItem is Utilisateur u)
-                {
-                    _selectedId = u.Id;
-                    txtNom.Text = u.Nom; txtPrenom.Text = u.Prenom;
-                    txtLogin.Text = u.Login;
-                    cmbRole.SelectedItem = u.Role;
-                    txtMdp.Clear();
-                }
+                dgv.SelectionChanged += OnSelectionChanged;
             }
             catch { }
         }
 
+        private void OnSelectionChanged(object? sender, EventArgs e)
+        {
+            if (dgv.CurrentRow?.DataBoundItem is Utilisateur u)
+            {
+                _selectedId = u.Id;
+                txtNom.Text = u.Nom;
+                txtPrenom.Text = u.Prenom;
+                txtLogin.Text = u.Login;
+                txtMdp.Clear();
+                cmbRole.SelectedItem = u.Role;
+                chkActif.Checked = u.Actif;
+            }
+        }
+
         private void Sauvegarder()
         {
-            if (string.IsNullOrWhiteSpace(txtNom.Text) || string.IsNullOrWhiteSpace(txtLogin.Text))
+            if (string.IsNullOrWhiteSpace(txtLogin.Text) || string.IsNullOrWhiteSpace(txtNom.Text))
             {
-                MessageBox.Show("Nom et login sont obligatoires.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (_service.LoginExiste(txtLogin.Text.Trim(), _selectedId))
-            {
-                MessageBox.Show("Ce login est déjÃ  utilisé.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Veuillez remplir les champs obligatoires (Nom, Login).", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
+                var u = new Utilisateur
+                {
+                    Id = _selectedId ?? 0,
+                    Nom = txtNom.Text.Trim(),
+                    Prenom = txtPrenom.Text.Trim(),
+                    Login = txtLogin.Text.Trim(),
+                    Role = cmbRole.SelectedItem?.ToString() ?? "Agent",
+                    Actif = chkActif.Checked
+                };
+
+                string? newMdp = string.IsNullOrWhiteSpace(txtMdp.Text) ? null : txtMdp.Text.Trim();
+
                 if (_selectedId.HasValue)
                 {
-                    var u = new Utilisateur
+                    if (u.Id == AuthService.UtilisateurConnecte?.Id && !u.Actif)
                     {
-                        Id = _selectedId.Value, Nom = txtNom.Text.Trim(),
-                        Prenom = txtPrenom.Text.Trim(), Login = txtLogin.Text.Trim(),
-                        Role = cmbRole.SelectedItem?.ToString() ?? "Agent"
-                    };
+                        MessageBox.Show("Vous ne pouvez pas desactiver votre propre compte.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
                     _service.ModifierUtilisateur(u);
-
-                    if (!string.IsNullOrWhiteSpace(txtMdp.Text))
-                        _service.ModifierMotDePasse(_selectedId.Value, txtMdp.Text);
+                    if (!string.IsNullOrWhiteSpace(newMdp))
+                        _service.ModifierMotDePasse(u.Id, newMdp);
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(txtMdp.Text))
+                    if (string.IsNullOrWhiteSpace(newMdp))
                     {
-                        MessageBox.Show("Le mot de passe est obligatoire pour un nouvel utilisateur.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Le mot de passe est obligatoire pour un nouvel utilisateur.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    var u = new Utilisateur
-                    {
-                        Nom = txtNom.Text.Trim(), Prenom = txtPrenom.Text.Trim(),
-                        Login = txtLogin.Text.Trim(), MotDePasse = txtMdp.Text,
-                        Role = cmbRole.SelectedItem?.ToString() ?? "Agent"
-                    };
+                    u.MotDePasse = newMdp;
                     _service.AjouterUtilisateur(u);
                 }
 
-                ChargerDonnees(); Nouveau();
-                MessageBox.Show("Utilisateur enregistré !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ChargerDonnees();
+                Nouveau();
+                MessageBox.Show("Utilisateur enregistre avec succes.", "Succes", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void Supprimer()
+        private void SupprimerUtilisateur()
         {
-            if (!_selectedId.HasValue) return;
-            if (MessageBox.Show("Supprimer cet utilisateur ?", "Confirmation",
+            if (!_selectedId.HasValue) { MessageBox.Show("Selectionnez un utilisateur.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
+            if (_selectedId.Value == AuthService.UtilisateurConnecte?.Id)
+            {
+                MessageBox.Show("Vous ne pouvez pas supprimer votre propre compte.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (MessageBox.Show("Voulez-vous vraiment supprimer cet utilisateur ?", "Confirmation",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+
             _service.SupprimerUtilisateur(_selectedId.Value);
-            ChargerDonnees(); Nouveau();
+            ChargerDonnees();
+            Nouveau();
+            MessageBox.Show("Utilisateur supprime.", "Succes", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Nouveau()
         {
             _selectedId = null;
             txtNom.Clear(); txtPrenom.Clear(); txtLogin.Clear(); txtMdp.Clear();
-            cmbRole.SelectedIndex = 0;
-        }
-
-        private Panel CreerChamp(string texteLabel, Control input, int largeur)
-        {
-            var p = new Panel { Width = largeur, Height = 65, Margin = new Padding(0, 0, 15, 15) };
-            var lbl = new Label { Text = texteLabel.ToUpper(), Dock = DockStyle.Top, Height = 22, ForeColor = Color.FromArgb(161, 161, 170), Font = new Font("Segoe UI", 8, FontStyle.Bold) };
-            input.Dock = DockStyle.Bottom;
-            input.Height = 35;
-            input.Font = new Font("Segoe UI", 10);
-            p.Controls.Add(input);
-            p.Controls.Add(lbl);
-            return p;
-        }
-
-        private static TextBox CreerInputText() => new()
-        {
-            Font = new Font("Segoe UI", 10),
-            BackColor = Color.FromArgb(20, 20, 20),
-            ForeColor = Color.White,
-            BorderStyle = BorderStyle.FixedSingle
-        };
-
-        private static Button CreerBouton(string text, Color bg, int w)
-        {
-            var b = new Button
-            {
-                Text = text, Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Size = new Size(w, 40), Margin = new Padding(10, 0, 0, 0),
-                BackColor = bg, ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand
-            };
-            b.FlatAppearance.BorderSize = 0;
-            return b;
+            cmbRole.SelectedIndex = 1;
+            chkActif.Checked = true;
+            dgv.ClearSelection();
         }
     }
 }
-
-
-
-
-

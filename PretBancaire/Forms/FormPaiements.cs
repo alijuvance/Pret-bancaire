@@ -1,206 +1,182 @@
-﻿using PretBancaire.Models;
+using PretBancaire.Models;
 using PretBancaire.Services;
+using PretBancaire.Utils;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace PretBancaire.Forms
 {
-    /// <summary>
-    /// Formulaire de gestion des paiements (remboursements).
-    /// </summary>
     public class FormPaiements : UserControl
     {
         private readonly PaiementService _service = new();
         private readonly PretService _pretService = new();
-        private DataGridView dgvPrets = null!, dgvPaiements = null!;
-        private ComboBox cmbMode = null!;
-        private TextBox txtMontant = null!, txtRef = null!, txtNotes = null!;
+        private DataGridView dgv = null!;
+        private ComboBox cmbPret = null!, cmbModePaiement = null!;
+        private TextBox txtMontant = null!, txtRef = null!;
         private DateTimePicker dtpDate = null!;
-        private Label lblRestant = null!, lblInfoPret = null!;
-        private int? _selectedPretId = null;
 
         public FormPaiements()
         {
-            this.BackColor = Color.FromArgb(0, 0, 0);
+            this.BackColor = UIHelper.BgDark;
             ConstruireInterface();
-            ChargerPrets();
+            ChargerDonnees();
         }
 
         private void ConstruireInterface()
         {
-            var splitContainer = new SplitContainer
-            {
-                Dock = DockStyle.Fill, Orientation = Orientation.Horizontal,
-                SplitterDistance = 250, BackColor = Color.FromArgb(0, 0, 0),
-                Panel1MinSize = 150, Panel2MinSize = 150
-            };
-            this.Controls.Add(splitContainer);
+            var panelTop = new Panel { Dock = DockStyle.Top, Height = 55, BackColor = Color.Transparent, Padding = new Padding(15, 10, 15, 0) };
+            var btnActualiser = UIHelper.CreerBouton("Actualiser", Color.FromArgb(100, 116, 139), 130);
+            btnActualiser.Location = new Point(15, 10);
+            btnActualiser.Click += (s, e) => ChargerDonnees();
+            panelTop.Controls.Add(btnActualiser);
+            this.Controls.Add(panelTop);
 
-            // === Panel haut : Liste des Prêts en cours ===
-            var lblTitrePrets = new Label
-            {
-                Text = "📋 PRÊTS EN COURS (SÉLECTIONNEZ UN PRÃŠT)",
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = Color.FromArgb(161, 161, 170),
-                Dock = DockStyle.Top, Height = 35, Padding = new Padding(10, 10, 0, 0)
-            };
-            splitContainer.Panel1.Controls.Add(lblTitrePrets);
+            dgv = new DataGridView();
+            UIHelper.FormaterGrid(dgv);
+            dgv.Dock = DockStyle.Fill;
+            this.Controls.Add(dgv);
 
-            dgvPrets = CreerGridView();
-            dgvPrets.Dock = DockStyle.Fill;
-            dgvPrets.SelectionChanged += (s, e) => PretSelectionne();
-            splitContainer.Panel1.Controls.Add(dgvPrets);
-
-            // === Panel bas : Paiements + formulaire ===
-            lblInfoPret = new Label
-            {
-                Text = "SÉLECTIONNEZ UN PRÃŠT CI-DESSUS POUR VOIR SES PAIEMENTS",
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.FromArgb(161, 161, 170),
-                Dock = DockStyle.Top, Height = 35, Padding = new Padding(10, 10, 0, 0)
-            };
-            splitContainer.Panel2.Controls.Add(lblInfoPret);
-
-            dgvPaiements = CreerGridView();
-            dgvPaiements.Dock = DockStyle.Fill;
-            splitContainer.Panel2.Controls.Add(dgvPaiements);
-
-            // === Panel formulaire paiement ===
             var panelForm = new Panel
             {
-                Dock = DockStyle.Bottom, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                BackColor = Color.FromArgb(10, 10, 10), Padding = new Padding(20)
+                Dock = DockStyle.Bottom,
+                Height = 170,
+                BackColor = UIHelper.BgCard,
+                Padding = new Padding(20, 12, 20, 12)
             };
 
             var flowInputs = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top, AutoSize = true, WrapContents = true, Padding = new Padding(0, 0, 0, 10)
+                Dock = DockStyle.Top,
+                Height = 72,
+                WrapContents = true,
+                Padding = new Padding(0)
             };
 
-            txtMontant = CreerInputText();
-            dtpDate = new DateTimePicker { Font = new Font("Segoe UI", 10), Format = DateTimePickerFormat.Short, Height = 35 };
-            
-            cmbMode = new ComboBox
-            {
-                Font = new Font("Segoe UI", 10), Height = 35,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = Color.FromArgb(20, 20, 20), ForeColor = Color.White
-            };
-            cmbMode.Items.AddRange(new[] { "Especes", "Virement", "Cheque", "CarteBancaire" });
-            cmbMode.SelectedIndex = 0;
+            cmbPret = new ComboBox { Font = new Font("Segoe UI", 10), Width = 280, DropDownStyle = ComboBoxStyle.DropDownList, BackColor = UIHelper.BgInput, ForeColor = UIHelper.TextPrimary };
+            cmbModePaiement = new ComboBox { Font = new Font("Segoe UI", 10), Width = 140, DropDownStyle = ComboBoxStyle.DropDownList, BackColor = UIHelper.BgInput, ForeColor = UIHelper.TextPrimary };
+            cmbModePaiement.Items.AddRange(new[] { "Especes", "Virement", "Carte", "Mobile Money" });
+            cmbModePaiement.SelectedIndex = 0;
 
-            txtRef = CreerInputText();
-            txtNotes = CreerInputText();
+            txtMontant = UIHelper.CreerTextBox(130);
+            txtRef = UIHelper.CreerTextBox(160);
+            dtpDate = new DateTimePicker { Font = new Font("Segoe UI", 10), Format = DateTimePickerFormat.Short, Height = 34 };
 
-            flowInputs.Controls.Add(CreerChamp("Montant", txtMontant, 150));
-            flowInputs.Controls.Add(CreerChamp("Date", dtpDate, 150));
-            flowInputs.Controls.Add(CreerChamp("Mode", cmbMode, 150));
-            flowInputs.Controls.Add(CreerChamp("Réf", txtRef, 150));
-            flowInputs.Controls.Add(CreerChamp("Notes", txtNotes, 300));
-            
-            lblRestant = new Label
-            {
-                Text = "Restant: — USD", Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = Color.FromArgb(245, 158, 11), AutoSize = true,
-                Margin = new Padding(20, 20, 0, 0)
-            };
-            flowInputs.Controls.Add(lblRestant);
-            
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Pret en cours", cmbPret, 280));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Montant (USD)", txtMontant, 130));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Date", dtpDate, 130));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Mode paiement", cmbModePaiement, 140));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Reference", txtRef, 160));
+
             panelForm.Controls.Add(flowInputs);
 
             var flowBtns = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top, Height = 60, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(0, 15, 0, 0)
+                Dock = DockStyle.Bottom,
+                Height = 52,
+                FlowDirection = FlowDirection.RightToLeft,
+                Padding = new Padding(0, 8, 0, 0)
             };
 
-            var btnPayer = new Button
-            {
-                Text = "Enregistrer le paiement", Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Size = new Size(220, 40), Margin = new Padding(10, 0, 0, 0),
-                BackColor = Color.FromArgb(34, 197, 94), ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand
-            };
-            btnPayer.FlatAppearance.BorderSize = 0;
-            btnPayer.Click += (s, e) => EnregistrerPaiement();
-            
-            flowBtns.Controls.Add(btnPayer);
+            var btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
+            btnNouveau.Click += (s, e) => Nouveau();
+
+            var btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentGreen, 140);
+            btnEnregistrer.Click += (s, e) => Sauvegarder();
+
+            flowBtns.Controls.Add(btnNouveau);
+            flowBtns.Controls.Add(btnEnregistrer);
+
             panelForm.Controls.Add(flowBtns);
-
-            splitContainer.Panel2.Controls.Add(panelForm);
+            this.Controls.Add(panelForm);
         }
 
-        private void ChargerPrets()
+        private void ChargerDonnees()
         {
             try
             {
-                var prets = _pretService.GetPretsByStatut("EnCours");
-                dgvPrets.DataSource = null;
-                dgvPrets.Columns.Clear();
-                dgvPrets.AutoGenerateColumns = true;
-                dgvPrets.DataSource = prets;
+                var paiements = _service.GetTousPaiements();
+                dgv.DataSource = null;
+                dgv.Columns.Clear();
+                dgv.AutoGenerateColumns = true;
+                dgv.DataSource = paiements;
 
-                foreach (DataGridViewColumn col in dgvPrets.Columns)
+                foreach (DataGridViewColumn col in dgv.Columns)
                 {
                     switch (col.Name)
                     {
-                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
-                        case "NomClient": col.HeaderText = "Client"; break;
-                        case "Montant": col.HeaderText = "Montant"; col.DefaultCellStyle.Format = "N2"; break;
-                        case "Mensualite": col.HeaderText = "Mensualité"; col.DefaultCellStyle.Format = "N2"; break;
-                        case "MontantTotal": col.HeaderText = "Total"; col.DefaultCellStyle.Format = "N2"; break;
-                        case "DureeMois": col.HeaderText = "Durée"; break;
-                        default: col.Visible = false; break;
+                        case "Id":
+                            col.HeaderText = "ID";
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotIdentity);
+                            col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                            col.Width = 70;
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                            break;
+                        case "NomClient": 
+                            col.HeaderText = "Client"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotPerson);
+                            break;
+                        case "Montant":
+                            col.HeaderText = "Montant (USD)";
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotMoney);
+                            col.DefaultCellStyle.Format = "N2";
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                            break;
+                        case "DatePaiement":
+                            col.HeaderText = "Date Paiement";
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotDate);
+                            col.DefaultCellStyle.Format = "dd/MM/yyyy";
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                            break;
+                        case "ModePaiement": 
+                            col.HeaderText = "Mode"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotSettings);
+                            break;
+                        case "Reference": 
+                            col.HeaderText = "R\u00e9f\u00e9rence"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotDocument);
+                            break;
+                        case "PretId":
+                        case "Notes":
+                            col.Visible = false;
+                            break;
                     }
                 }
+
+                ChargerPretsEnCours();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void PretSelectionne()
+        private void ChargerPretsEnCours()
         {
-            try
+            cmbPret.Items.Clear();
+            var prets = _pretService.GetPretsByStatut("EnCours");
+            foreach (var p in prets)
             {
-                if (dgvPrets.CurrentRow?.DataBoundItem is not Pret pret) return;
-
-                _selectedPretId = pret.Id;
-                var restant = _pretService.GetMontantRestant(pret.Id);
-                lblRestant.Text = $"Restant: {restant:N2} USD";
-                lblInfoPret.Text = $"Paiements pour le Prêt #{pret.Id} — {pret.NomClient}";
-
-                var paiements = _service.GetPaiementsByPret(pret.Id);
-                dgvPaiements.DataSource = null;
-                dgvPaiements.Columns.Clear();
-                dgvPaiements.AutoGenerateColumns = true;
-                dgvPaiements.DataSource = paiements;
-
-                foreach (DataGridViewColumn col in dgvPaiements.Columns)
+                cmbPret.Items.Add(new ComboItemPaiement
                 {
-                    switch (col.Name)
-                    {
-                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
-                        case "Montant": col.HeaderText = "Montant"; col.DefaultCellStyle.Format = "N2"; break;
-                        case "DatePaiement": col.HeaderText = "Date"; col.DefaultCellStyle.Format = "dd/MM/yyyy"; break;
-                        case "ModePaiementLibelle": col.HeaderText = "Mode"; break;
-                        case "Reference": col.HeaderText = "Référence"; break;
-                        default: col.Visible = false; break;
-                    }
-                }
+                    Id = p.Id,
+                    Text = p.NomClient + " - Reste: " + _service.GetTotalPaiements(p.Id).ToString("N2") + " USD"
+                });
             }
-            catch { }
         }
 
-        private void EnregistrerPaiement()
+        private void Sauvegarder()
         {
-            if (!_selectedPretId.HasValue)
+            var pretItem = cmbPret.SelectedItem as ComboItemPaiement;
+            if (pretItem == null || pretItem.Id <= 0)
             {
-                MessageBox.Show("Veuillez sélectionner un Prêt.", "Attention", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Veuillez selectionner un pret valide.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (!decimal.TryParse(txtMontant.Text, out decimal montant) || montant <= 0)
+            if (!decimal.TryParse(txtMontant.Text, out decimal m) || m <= 0)
             {
-                MessageBox.Show("Montant invalide.", "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Veuillez entrer un montant valide superieur a 0.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -208,80 +184,40 @@ namespace PretBancaire.Forms
             {
                 var paiement = new Paiement
                 {
-                    PretId = _selectedPretId.Value,
-                    Montant = montant,
+                    PretId = pretItem.Id,
+                    Montant = m,
                     DatePaiement = dtpDate.Value,
-                    ModePaiement = cmbMode.SelectedItem?.ToString() ?? "Especes",
-                    Reference = txtRef.Text.Trim(),
-                    Notes = txtNotes.Text.Trim()
+                    ModePaiement = cmbModePaiement.SelectedItem?.ToString() ?? "",
+                    Reference = txtRef.Text.Trim()
                 };
 
                 var (success, message) = _service.EnregistrerPaiement(paiement);
-                MessageBox.Show(message, success ? "Succès" : "Erreur",
-                    MessageBoxButtons.OK, success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
 
-                if (success)
-                {
-                    txtMontant.Clear(); txtRef.Clear(); txtNotes.Clear();
-                    PretSelectionne(); // Rafraîchir
-                    ChargerPrets();    // Rafraîchir la liste si Prêt terminé
-                }
+                MessageBox.Show(message, success ? "Succes" : "Erreur",
+                    MessageBoxButtons.OK, success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+                if (success) { ChargerDonnees(); Nouveau(); }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // === Helpers ===
-        private static DataGridView CreerGridView()
+        private void Nouveau()
         {
-            var g = new DataGridView
-            {
-                BackgroundColor = Color.FromArgb(0, 0, 0), ForeColor = Color.White,
-                GridColor = Color.FromArgb(20, 20, 20), BorderStyle = BorderStyle.None,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                ReadOnly = true, AllowUserToAddRows = false, RowHeadersVisible = false,
-                Font = new Font("Segoe UI", 10)
-            };
-            g.DefaultCellStyle.BackColor = Color.FromArgb(10, 10, 10);
-            g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 112, 243);
-            g.DefaultCellStyle.Padding = new Padding(10, 5, 10, 5);
-            g.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 0, 0);
-            g.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(161, 161, 170);
-            g.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            g.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            g.EnableHeadersVisualStyles = false;
-            g.ColumnHeadersHeight = 50;
-            g.RowTemplate.Height = 45;
-            return g;
+            if (cmbPret.Items.Count > 0) cmbPret.SelectedIndex = -1;
+            txtMontant.Clear();
+            txtRef.Clear();
+            cmbModePaiement.SelectedIndex = 0;
+            dtpDate.Value = DateTime.Today;
+            dgv.ClearSelection();
         }
+    }
 
-        private Panel CreerChamp(string texteLabel, Control input, int largeur)
-        {
-            var p = new Panel { Width = largeur, Height = 65, Margin = new Padding(0, 0, 15, 15) };
-            var lbl = new Label { Text = texteLabel.ToUpper(), Dock = DockStyle.Top, Height = 22, ForeColor = Color.FromArgb(161, 161, 170), Font = new Font("Segoe UI", 8, FontStyle.Bold) };
-            input.Dock = DockStyle.Bottom;
-            input.Height = 35;
-            input.Font = new Font("Segoe UI", 10);
-            p.Controls.Add(input);
-            p.Controls.Add(lbl);
-            return p;
-        }
-
-        private static TextBox CreerInputText() => new()
-        {
-            Font = new Font("Segoe UI", 10),
-            BackColor = Color.FromArgb(20, 20, 20),
-            ForeColor = Color.White,
-            BorderStyle = BorderStyle.FixedSingle
-        };
+    class ComboItemPaiement
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = "";
+        public override string ToString() => Text;
     }
 }
-
-
-
-
-

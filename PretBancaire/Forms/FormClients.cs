@@ -1,12 +1,12 @@
-﻿﻿using PretBancaire.Models;
+using PretBancaire.Models;
 using PretBancaire.Services;
 using PretBancaire.Utils;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace PretBancaire.Forms
 {
-    /// <summary>
-    /// Formulaire de gestion des clients (CRUD complet).
-    /// </summary>
     public class FormClients : UserControl
     {
         private readonly ClientService _service = new();
@@ -18,7 +18,7 @@ namespace PretBancaire.Forms
 
         public FormClients()
         {
-            this.BackColor = Color.FromArgb(0, 0, 0);
+            this.BackColor = UIHelper.BgDark;
             ConstruireInterface();
             ChargerDonnees();
         }
@@ -26,118 +26,96 @@ namespace PretBancaire.Forms
         private void ConstruireInterface()
         {
             // === Barre de recherche ===
-            var panelSearch = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.Transparent };
+            var panelSearch = new Panel { Dock = DockStyle.Top, Height = 55, BackColor = Color.Transparent, Padding = new Padding(15, 10, 15, 0) };
 
             txtRecherche = new TextBox
             {
-                PlaceholderText = "ðŸ” Rechercher par nom, Prénom ou CIN...",
+                PlaceholderText = "Rechercher par nom, prenom ou CIN...",
                 Font = new Font("Segoe UI", 11),
-                Size = new Size(350, 30),
-                Location = new Point(10, 10),
-                BackColor = Color.FromArgb(20, 20, 20),
-                ForeColor = Color.White,
+                Size = new Size(380, 35),
+                Location = new Point(15, 10),
+                BackColor = UIHelper.BgInput,
+                ForeColor = UIHelper.TextPrimary,
                 BorderStyle = BorderStyle.FixedSingle
             };
             txtRecherche.TextChanged += (s, e) => Rechercher();
             panelSearch.Controls.Add(txtRecherche);
-
-            var btnNouveau = CreerBouton("➕ Nouveau", Color.FromArgb(34, 197, 94), 120);
-            btnNouveau.Location = new Point(380, 5); // Position absolue pour la barre du haut
-            btnNouveau.Click += (s, e) => NouveauClient();
-            panelSearch.Controls.Add(btnNouveau);
-
             this.Controls.Add(panelSearch);
 
-            // === Grille de données ===
-            dgv = new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.FromArgb(0, 0, 0), // slate-900
-                ForeColor = Color.White,
-                GridColor = Color.FromArgb(20, 20, 20),
-                BorderStyle = BorderStyle.None,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                RowHeadersVisible = false,
-                Font = new Font("Segoe UI", 10)
-            };
-            dgv.DefaultCellStyle.BackColor = Color.FromArgb(10, 10, 10); // slate-800
-            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 112, 243); // blue-500
-            dgv.DefaultCellStyle.Padding = new Padding(10, 5, 10, 5);
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 0, 0);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(161, 161, 170); // slate-400
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-            dgv.EnableHeadersVisualStyles = false;
-            dgv.ColumnHeadersHeight = 50;
-            dgv.RowTemplate.Height = 45;
+            // === DataGridView ===
+            dgv = new DataGridView();
+            UIHelper.FormaterGrid(dgv);
+            dgv.Dock = DockStyle.Fill;
             dgv.SelectionChanged += OnSelectionChanged;
             this.Controls.Add(dgv);
 
-            // === Panel de formulaire en bas ===
+            // === Panel formulaire ===
             var panelForm = new Panel
             {
                 Dock = DockStyle.Bottom,
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                BackColor = Color.FromArgb(10, 10, 10), // slate-800
-                Padding = new Padding(20)
+                Height = 170,
+                BackColor = UIHelper.BgCard,
+                Padding = new Padding(20, 12, 20, 12)
             };
 
             var flowInputs = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
-                AutoSize = true,
+                Height = 72,
                 WrapContents = true,
-                Padding = new Padding(0, 0, 0, 10)
+                Padding = new Padding(0)
             };
 
-            txtNom = CreerTextBox(200);
-            txtPrenom = CreerTextBox(200);
-            txtCin = CreerTextBox(150);
-            txtTel = CreerTextBox(150);
-            txtEmail = CreerTextBox(250);
-            txtAdresse = CreerTextBox(300);
+            txtNom = UIHelper.CreerTextBox(170);
+            txtPrenom = UIHelper.CreerTextBox(170);
+            txtCin = UIHelper.CreerTextBox(130);
+            txtTel = UIHelper.CreerTextBox(140);
+            txtEmail = UIHelper.CreerTextBox(200);
+            txtAdresse = UIHelper.CreerTextBox(200);
 
             dtpNaissance = new DateTimePicker
             {
                 Font = new Font("Segoe UI", 10),
                 Format = DateTimePickerFormat.Short,
-                Height = 35
+                Height = 34
             };
 
-            flowInputs.Controls.Add(CreerChamp("Nom", txtNom, 200));
-            flowInputs.Controls.Add(CreerChamp("Prénom", txtPrenom, 200));
-            flowInputs.Controls.Add(CreerChamp("CIN", txtCin, 150));
-            flowInputs.Controls.Add(CreerChamp("Téléphone", txtTel, 150));
-            flowInputs.Controls.Add(CreerChamp("Email", txtEmail, 250));
-            flowInputs.Controls.Add(CreerChamp("Naissance", dtpNaissance, 150));
-            flowInputs.Controls.Add(CreerChamp("Adresse", txtAdresse, 300));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Nom", txtNom, 170));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Prenom", txtPrenom, 170));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("CIN", txtCin, 130));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Telephone", txtTel, 140));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Email", txtEmail, 200));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Naissance", dtpNaissance, 130));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Adresse", txtAdresse, 200));
             panelForm.Controls.Add(flowInputs);
 
+            // === 4 boutons principaux ===
             var flowBtns = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top,
-                Height = 60,
+                Dock = DockStyle.Bottom,
+                Height = 52,
                 FlowDirection = FlowDirection.RightToLeft,
-                Padding = new Padding(0, 15, 0, 0)
+                Padding = new Padding(0, 8, 0, 0)
             };
 
-            var btnNouveauForm = CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
-            btnNouveauForm.Click += (s, e) => NouveauClient();
-            var btnSupprimer = CreerBouton("Supprimer", Color.FromArgb(239, 68, 68), 120);
-            btnSupprimer.Click += (s, e) => Supprimer();
-            var btnEnregistrer = CreerBouton("Enregistrer", Color.FromArgb(0, 112, 243), 140);
+            var btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
+            btnNouveau.Click += (s, e) => NouveauClient();
+
+            var btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 140);
             btnEnregistrer.Click += (s, e) => Sauvegarder();
 
-            flowBtns.Controls.Add(btnNouveauForm);
-            flowBtns.Controls.Add(btnSupprimer);
-            flowBtns.Controls.Add(btnEnregistrer);
-            panelForm.Controls.Add(flowBtns);
+            var btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentGreen, 130);
+            btnModifier.Click += (s, e) => { if (_selectedId.HasValue) txtNom.Focus(); else MessageBox.Show("Selectionnez un client.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); };
 
+            var btnSupprimer = UIHelper.CreerBouton("Supprimer", UIHelper.AccentRed, 120);
+            btnSupprimer.Click += (s, e) => Supprimer();
+
+            flowBtns.Controls.Add(btnNouveau);
+            flowBtns.Controls.Add(btnEnregistrer);
+            flowBtns.Controls.Add(btnModifier);
+            flowBtns.Controls.Add(btnSupprimer);
+
+            panelForm.Controls.Add(flowBtns);
             this.Controls.Add(panelForm);
         }
 
@@ -152,20 +130,42 @@ namespace PretBancaire.Forms
                 dgv.AutoGenerateColumns = true;
                 dgv.DataSource = clients;
 
-                // Configurer les colonnes visibles (accès null-safe)
                 foreach (DataGridViewColumn col in dgv.Columns)
                 {
                     switch (col.Name)
                     {
-                        case "Id": col.HeaderText = "ID"; col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None; col.Width = 50; break;
-                        case "Nom": col.HeaderText = "Nom"; break;
-                        case "Prenom": col.HeaderText = "Prénom"; break;
-                        case "Cin": col.HeaderText = "CIN"; break;
-                        case "Telephone": col.HeaderText = "Téléphone"; break;
-                        case "Email": col.HeaderText = "Email"; break;
+                        case "Id":
+                            col.HeaderText = "ID";
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotIdentity);
+                            col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                            col.Width = 70;
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                            break;
+                        case "Nom": 
+                            col.HeaderText = "Nom"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotPerson);
+                            break;
+                        case "Prenom": 
+                            col.HeaderText = "Pr\u00e9nom"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotPerson);
+                            break;
+                        case "Cin": 
+                            col.HeaderText = "CIN"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotDocument);
+                            break;
+                        case "Telephone": 
+                            col.HeaderText = "T\u00e9l\u00e9phone"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotContact);
+                            break;
+                        case "Email": 
+                            col.HeaderText = "Email"; 
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotContact);
+                            break;
                         case "DateNaissance":
                             col.HeaderText = "Naissance";
+                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotDate);
                             col.DefaultCellStyle.Format = "dd/MM/yyyy";
+                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
                             break;
                         case "Adresse":
                         case "DateInscription":
@@ -176,11 +176,12 @@ namespace PretBancaire.Forms
                             break;
                     }
                 }
+
                 dgv.SelectionChanged += OnSelectionChanged;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -189,8 +190,7 @@ namespace PretBancaire.Forms
             try
             {
                 var terme = txtRecherche.Text.Trim();
-                var clients = string.IsNullOrEmpty(terme) ? _service.GetTousClients() : _service.RechercherClients(terme);
-                dgv.DataSource = clients;
+                dgv.DataSource = string.IsNullOrEmpty(terme) ? _service.GetTousClients() : _service.RechercherClients(terme);
             }
             catch { }
         }
@@ -233,10 +233,9 @@ namespace PretBancaire.Forms
                     DateNaissance = dtpNaissance.Value
                 };
 
-                // Vérifier l'unicité du CIN
                 if (_service.CinExiste(client.Cin, _selectedId))
                 {
-                    MessageBox.Show("Ce CIN est déjÃ  utilisé par un autre client.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Ce CIN est deja utilise par un autre client.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -247,22 +246,22 @@ namespace PretBancaire.Forms
 
                 ChargerDonnees();
                 NouveauClient();
-                MessageBox.Show("Client enregistré avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Client enregistre avec succes !", "Succes", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur: {ex.StackTrace}", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void Supprimer()
         {
-            if (!_selectedId.HasValue) return;
+            if (!_selectedId.HasValue) { MessageBox.Show("Selectionnez un client.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
             if (MessageBox.Show("Voulez-vous vraiment supprimer ce client ?", "Confirmation",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
 
             var (success, message) = _service.SupprimerClient(_selectedId.Value);
-            MessageBox.Show(message, success ? "Succès" : "Erreur",
+            MessageBox.Show(message, success ? "Succes" : "Erreur",
                 MessageBoxButtons.OK, success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
 
             if (success) { ChargerDonnees(); NouveauClient(); }
@@ -274,46 +273,7 @@ namespace PretBancaire.Forms
             txtNom.Clear(); txtPrenom.Clear(); txtCin.Clear();
             txtTel.Clear(); txtEmail.Clear(); txtAdresse.Clear();
             dtpNaissance.Value = DateTime.Today.AddYears(-25);
-        }
-
-        // === Helpers UI ===
-        private Panel CreerChamp(string texteLabel, Control input, int largeur)
-        {
-            var p = new Panel { Width = largeur, Height = 65, Margin = new Padding(0, 0, 15, 15) };
-            var lbl = new Label { Text = texteLabel.ToUpper(), Dock = DockStyle.Top, Height = 22, ForeColor = Color.FromArgb(161, 161, 170), Font = new Font("Segoe UI", 8, FontStyle.Bold) };
-            input.Dock = DockStyle.Bottom;
-            input.Height = 35;
-            input.Font = new Font("Segoe UI", 10);
-            p.Controls.Add(input);
-            p.Controls.Add(lbl);
-            return p;
-        }
-
-        private static TextBox CreerTextBox(int w) => new()
-        {
-            Font = new Font("Segoe UI", 10),
-            Size = new Size(w, 35),
-            BackColor = Color.FromArgb(20, 20, 20),
-            ForeColor = Color.White,
-            BorderStyle = BorderStyle.FixedSingle
-        };
-
-        private static Button CreerBouton(string text, Color bg, int w)
-        {
-            var btn = new Button
-            {
-                Text = text, Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Size = new Size(w, 40), Margin = new Padding(10, 0, 0, 0),
-                BackColor = bg, ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand
-            };
-            btn.FlatAppearance.BorderSize = 0;
-            return btn;
+            dgv.ClearSelection();
         }
     }
 }
-
-
-
-
-

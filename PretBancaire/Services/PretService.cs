@@ -1,10 +1,10 @@
-ï»¿using PretBancaire.Data;
+using PretBancaire.Data;
 using PretBancaire.Models;
 
 namespace PretBancaire.Services
 {
     /// <summary>
-    /// Service mÃ©tier pour la gestion des prÃªts bancaires.
+    /// Service métier pour la gestion des prêts bancaires.
     /// </summary>
     public class PretService
     {
@@ -17,13 +17,13 @@ namespace PretBancaire.Services
         public List<Pret> GetPretsByStatut(string statut) => _repo.GetByStatut(statut);
 
         /// <summary>
-        /// CrÃ©e un nouveau prÃªt avec calcul automatique de la mensualitÃ©.
+        /// Crée un nouveau prêt avec calcul automatique de la mensualité.
         /// </summary>
         public (bool success, string message, int? id) CreerPret(int clientId, decimal montant, decimal taux, int duree, string notes)
         {
-            // VÃ©rifier si le client a dÃ©jÃ  un prÃªt en cours
+            // Vérifier si le client a déjà un prêt en cours
             if (_repo.ClientAPretEnCours(clientId))
-                return (false, "Ce client a dÃ©jÃ  un prÃªt actif. Un seul prÃªt Ã  la fois est autorisÃ©.", null);
+                return (false, "Ce client a déjà un prêt actif. Un seul prêt à la fois est autorisé.", null);
 
             var mensualite = Pret.CalculerMensualite(montant, taux, duree);
             var montantTotal = mensualite * duree;
@@ -41,15 +41,19 @@ namespace PretBancaire.Services
             };
 
             int id = _repo.Ajouter(pret);
-            return (true, $"PrÃªt #{id} crÃ©Ã© avec succÃ¨s. MensualitÃ©: {mensualite:N2} USD", id);
+            return (true, $"Prêt #{id} créé avec succès. Mensualité: {mensualite:N2} USD", id);
         }
 
         public bool ApprouverPret(int id) => _repo.ModifierStatut(id, "Approuve");
         public bool DemarrerPret(int id) => _repo.ModifierStatut(id, "EnCours");
         public bool RejeterPret(int id) => _repo.ModifierStatut(id, "Rejete");
+        public (bool success, string message) ChangerStatutPret(int id, string statut) {
+            bool result = _repo.ModifierStatut(id, statut);
+            return result ? (true, "Statut mis à jour avec succès.") : (false, "Impossible de mettre à jour le statut.");
+        }
 
         /// <summary>
-        /// Retourne le montant restant Ã  payer pour un prÃªt.
+        /// Retourne le montant restant à payer pour un prêt.
         /// </summary>
         public decimal GetMontantRestant(int pretId)
         {
@@ -60,4 +64,5 @@ namespace PretBancaire.Services
         }
     }
 }
+
 
