@@ -52,6 +52,28 @@ namespace PretBancaire.Data
             cmd.Parameters.AddWithValue("@n", p.Notes);
             return Convert.ToInt32(cmd.ExecuteScalar());
         }
+        public bool Modifier(Paiement p)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            var cmd = new MySqlCommand(
+                @"UPDATE paiements SET montant = @m, date_paiement = @dp, mode_paiement = @mp, 
+                  reference = @ref, notes = @n WHERE id = @id", conn);
+            cmd.Parameters.AddWithValue("@id", p.Id);
+            cmd.Parameters.AddWithValue("@m", p.Montant);
+            cmd.Parameters.AddWithValue("@dp", p.DatePaiement);
+            cmd.Parameters.AddWithValue("@mp", p.ModePaiement);
+            cmd.Parameters.AddWithValue("@ref", p.Reference);
+            cmd.Parameters.AddWithValue("@n", p.Notes);
+            return cmd.ExecuteNonQuery() > 0;
+        }
+
+        public bool Supprimer(int id)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            var cmd = new MySqlCommand("DELETE FROM paiements WHERE id = @id", conn);
+            cmd.Parameters.AddWithValue("@id", id);
+            return cmd.ExecuteNonQuery() > 0;
+        }
 
         public decimal GetTotalPaye(int pretId)
         {

@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using PretBancaire.Models;
 
 namespace PretBancaire.Data
@@ -63,16 +63,15 @@ namespace PretBancaire.Data
         {
             using var conn = DatabaseConnection.GetConnection();
             var cmd = new MySqlCommand(
-                @"INSERT INTO prets (client_id, montant, taux_interet, duree_mois, mensualite, montant_total, statut, notes)
-                  VALUES (@cid, @m, @t, @d, @men, @tot, @s, @n); SELECT LAST_INSERT_ID();", conn);
+                @"INSERT INTO prets (client_id, montant, taux_interet, duree_mois, mensualite, montant_total, statut, description, date_approbation)
+                  VALUES (@cid, @m, @t, @d, @men, @tot, 'EnCours', @desc, NOW()); SELECT LAST_INSERT_ID();", conn);
             cmd.Parameters.AddWithValue("@cid", p.ClientId);
             cmd.Parameters.AddWithValue("@m", p.Montant);
             cmd.Parameters.AddWithValue("@t", p.TauxInteret);
             cmd.Parameters.AddWithValue("@d", p.DureeMois);
             cmd.Parameters.AddWithValue("@men", p.Mensualite);
             cmd.Parameters.AddWithValue("@tot", p.MontantTotal);
-            cmd.Parameters.AddWithValue("@s", p.Statut);
-            cmd.Parameters.AddWithValue("@n", p.Notes);
+            cmd.Parameters.AddWithValue("@desc", p.Description);
             return Convert.ToInt32(cmd.ExecuteScalar());
         }
 
@@ -86,6 +85,38 @@ namespace PretBancaire.Data
             var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@id", id);
             cmd.Parameters.AddWithValue("@s", nouveauStatut);
+            return cmd.ExecuteNonQuery() > 0;
+        }
+
+        /// <summary>
+        /// Modifie les détails d'un prêt.
+        /// </summary>
+        public bool Modifier(Pret p)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            var cmd = new MySqlCommand(
+                @"UPDATE prets 
+                  SET montant = @montant, montant_total = @montant_total, taux_interet = @taux, duree_mois = @duree, 
+                      mensualite = @mensualite, description = @desc, statut = @statut
+                  WHERE id = @id", conn);
+
+            cmd.Parameters.AddWithValue("@id", p.Id);
+            cmd.Parameters.AddWithValue("@montant", p.Montant);
+            cmd.Parameters.AddWithValue("@montant_total", p.MontantTotal);
+            cmd.Parameters.AddWithValue("@taux", p.TauxInteret);
+            cmd.Parameters.AddWithValue("@duree", p.DureeMois);
+            cmd.Parameters.AddWithValue("@mensualite", p.Mensualite);
+            cmd.Parameters.AddWithValue("@desc", string.IsNullOrWhiteSpace(p.Description) ? DBNull.Value : p.Description);
+            cmd.Parameters.AddWithValue("@statut", p.Statut);
+
+            return cmd.ExecuteNonQuery() > 0;
+        }
+
+        public bool Supprimer(int id)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            var cmd = new MySqlCommand("DELETE FROM prets WHERE id = @id", conn);
+            cmd.Parameters.AddWithValue("@id", id);
             return cmd.ExecuteNonQuery() > 0;
         }
 
@@ -131,7 +162,7 @@ namespace PretBancaire.Data
                 DateDemande = reader.GetDateTime("date_demande"),
                 DateApprobation = reader.IsDBNull(reader.GetOrdinal("date_approbation"))
                     ? null : reader.GetDateTime("date_approbation"),
-                Notes = reader.IsDBNull(reader.GetOrdinal("notes")) ? "" : reader.GetString("notes")
+                Description = reader.IsDBNull(reader.GetOrdinal("description")) ? "" : reader.GetString("description")
             };
             if (withClient) pret.NomClient = reader.GetString("nom_client");
             return pret;

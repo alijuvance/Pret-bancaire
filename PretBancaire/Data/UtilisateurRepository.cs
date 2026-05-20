@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using PretBancaire.Models;
 
 namespace PretBancaire.Data
@@ -66,15 +66,14 @@ namespace PretBancaire.Data
         {
             using var conn = DatabaseConnection.GetConnection();
             var cmd = new MySqlCommand(
-                @"INSERT INTO utilisateurs (nom, prenom, login, mot_de_passe, role, actif)
-                  VALUES (@nom, @prenom, @login, @mdp, @role, @actif);
+                @"INSERT INTO utilisateurs (nom, prenom, login, mot_de_passe, actif)
+                  VALUES (@nom, @prenom, @login, @mdp, @actif);
                   SELECT LAST_INSERT_ID();", conn);
 
             cmd.Parameters.AddWithValue("@nom", u.Nom);
             cmd.Parameters.AddWithValue("@prenom", u.Prenom);
             cmd.Parameters.AddWithValue("@login", u.Login);
             cmd.Parameters.AddWithValue("@mdp", u.MotDePasse);
-            cmd.Parameters.AddWithValue("@role", u.Role);
             cmd.Parameters.AddWithValue("@actif", u.Actif);
 
             return Convert.ToInt32(cmd.ExecuteScalar());
@@ -88,13 +87,12 @@ namespace PretBancaire.Data
             using var conn = DatabaseConnection.GetConnection();
             var cmd = new MySqlCommand(
                 @"UPDATE utilisateurs SET nom = @nom, prenom = @prenom, login = @login,
-                  role = @role, actif = @actif WHERE id = @id", conn);
+                  actif = @actif WHERE id = @id", conn);
 
             cmd.Parameters.AddWithValue("@id", u.Id);
             cmd.Parameters.AddWithValue("@nom", u.Nom);
             cmd.Parameters.AddWithValue("@prenom", u.Prenom);
             cmd.Parameters.AddWithValue("@login", u.Login);
-            cmd.Parameters.AddWithValue("@role", u.Role);
             cmd.Parameters.AddWithValue("@actif", u.Actif);
 
             return cmd.ExecuteNonQuery() > 0;
@@ -155,7 +153,6 @@ namespace PretBancaire.Data
                 Prenom = reader.GetString("prenom"),
                 Login = reader.GetString("login"),
                 MotDePasse = reader.GetString("mot_de_passe"),
-                Role = reader.GetString("role"),
                 DateCreation = reader.GetDateTime("date_creation"),
                 Actif = reader.GetBoolean("actif")
             };

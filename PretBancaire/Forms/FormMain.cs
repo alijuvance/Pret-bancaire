@@ -77,7 +77,7 @@ namespace PretBancaire.Forms
             var user = AuthService.UtilisateurConnecte;
             var lblUser = new Label
             {
-                Text = $"👤 {user?.NomComplet ?? "N/A"}\n    {user?.Role ?? ""}",
+                Text = $"👤 {user?.NomComplet ?? "N/A"}",
                 Font = new Font("Segoe UI", 9),
                 ForeColor = Color.FromArgb(150, 160, 180),
                 Dock = DockStyle.Top,
@@ -97,10 +97,9 @@ namespace PretBancaire.Forms
                 ("Paiements", "💳", AfficherPaiements),
             };
 
-            // Ajouter le menu Utilisateurs si Admin
+            // Ajouter le menu Utilisateurs
             var menuList = new List<(string text, string icon, Action action)>(menus);
-            if (user?.EstAdmin == true)
-                menuList.Add(("Utilisateurs", "🔧", AfficherUtilisateurs));
+            menuList.Add(("Utilisateurs", "🔧", AfficherUtilisateurs));
 
             // Panel pour les boutons
             var panelMenus = new FlowLayoutPanel

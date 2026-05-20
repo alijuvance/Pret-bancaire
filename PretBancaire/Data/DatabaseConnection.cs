@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 
 namespace PretBancaire.Data
 {
@@ -23,7 +23,8 @@ namespace PretBancaire.Data
         /// </summary>
         private static string ConnectionString =>
             $"Server={Server};Port={Port};Database={Database};Uid={User};Pwd={Password};" +
-            $"CharSet=utf8mb4;SslMode=Preferred;ConnectionTimeout=30;";
+            $"CharSet=utf8mb4;SslMode=Preferred;ConnectionTimeout=30;" +
+            $"AllowPublicKeyRetrieval=True;Pooling=True;MinimumPoolSize=1;MaximumPoolSize=20;";
 
         /// <summary>
         /// Crée et retourne une nouvelle connexion MySQL.

@@ -1,8 +1,8 @@
 namespace PretBancaire.Models
 {
     /// <summary>
-    /// Représente un paiement (remboursement) effectué sur un prêt.
-    /// Correspond à la table 'paiements' dans la base de données.
+    /// ReprÃ©sente un paiement (remboursement) effectuÃ© sur un prÃªt.
+    /// Correspond Ã  la table 'paiements' dans la base de donnÃ©es.
     /// </summary>
     public class Paiement
     {
@@ -15,19 +15,19 @@ namespace PretBancaire.Models
         public string Notes { get; set; } = string.Empty;
 
         /// <summary>
-        /// Retourne le libellé du mode de paiement en français.
+        /// Retourne le libellÃ© du mode de paiement en franÃ§ais.
         /// </summary>
         public string ModePaiementLibelle => ModePaiement switch
         {
-            "Especes" => "Espèces",
+            "Especes" => "EspÃ¨ces",
             "Virement" => "Virement",
-            "Cheque" => "Chèque",
+            "Cheque" => "ChÃ¨que",
             "CarteBancaire" => "Carte Bancaire",
             _ => ModePaiement
         };
 
         public override string ToString() =>
-            $"Paiement #{Id} - {Montant:N2} USD ({ModePaiementLibelle})";
+            $"Paiement #{Id} - {Montant:N2} Ar ({ModePaiementLibelle})";
         public string NomClient { get; set; } = "";
     }
 }

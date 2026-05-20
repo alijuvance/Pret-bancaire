@@ -1,4 +1,4 @@
-﻿using PretBancaire.Services;
+using PretBancaire.Services;
 
 namespace PretBancaire.Forms
 {
@@ -47,6 +47,40 @@ namespace PretBancaire.Forms
                 BackColor = Color.FromArgb(0, 0, 0) // slate-900
             };
 
+            // === Bannière de bienvenue ===
+            var user = Services.AuthService.UtilisateurConnecte;
+            var panelBienvenue = new Panel
+            {
+                Size = new Size(900, 60),
+                Margin = new Padding(15, 5, 15, 15),
+                BackColor = Color.FromArgb(10, 10, 10)
+            };
+            var bordureBienvenue = new Panel { Dock = DockStyle.Top, Height = 3, BackColor = Color.FromArgb(56, 189, 248) };
+            panelBienvenue.Controls.Add(bordureBienvenue);
+
+            var lblBienvenue = new Label
+            {
+                Text = $"👋 Bienvenue, {user?.NomComplet ?? "Utilisateur"}",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.FromArgb(226, 232, 240),
+                Dock = DockStyle.Left,
+                AutoSize = true,
+                Padding = new Padding(15, 15, 0, 0)
+            };
+            panelBienvenue.Controls.Add(lblBienvenue);
+
+            var lblDbStatus = new Label
+            {
+                Text = Data.DatabaseConnection.GetConnectionStatus(),
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.FromArgb(148, 163, 184),
+                Dock = DockStyle.Right,
+                AutoSize = true,
+                Padding = new Padding(0, 18, 15, 0)
+            };
+            panelBienvenue.Controls.Add(lblDbStatus);
+            mainFlow.Controls.Add(panelBienvenue);
+
             // Helpers pour les couleurs
             var cPrimary = Color.FromArgb(0, 112, 243);  // blue-500
             var cSuccess = Color.FromArgb(16, 185, 129); // emerald-500
@@ -58,12 +92,10 @@ namespace PretBancaire.Forms
             // Ligne 1 : Global
             mainFlow.Controls.Add(CreerCarte("👥", "Total Clients", data.NombreClients.ToString(), cPrimary));
             mainFlow.Controls.Add(CreerCarte("💰", "Prêts Accordés", data.NombreTotalPrets.ToString(), cPurple));
-            mainFlow.Controls.Add(CreerCarte("💵", "Montant En Cours", $"{data.MontantTotalEnCours:N2} USD", cPrimary, 350));
-            mainFlow.Controls.Add(CreerCarte("💳", "Total Remboursé", $"{data.TotalRemboursements:N2} USD", cTeal, 350));
+            mainFlow.Controls.Add(CreerCarte("💵", "Montant En Cours", $"{data.MontantTotalEnCours:N2} Ar", cPrimary, 350));
+            mainFlow.Controls.Add(CreerCarte("💳", "Total Remboursé", $"{data.TotalRemboursements:N2} Ar", cTeal, 350));
 
             // Ligne 2 : Statuts
-            mainFlow.Controls.Add(CreerCarte("⏳", "En Attente", data.GetStatut("EnAttente").ToString(), cWarning));
-            mainFlow.Controls.Add(CreerCarte("✅", "Approuvés", data.GetStatut("Approuve").ToString(), cSuccess));
             mainFlow.Controls.Add(CreerCarte("🔄", "En Cours", data.GetStatut("EnCours").ToString(), cPrimary));
             mainFlow.Controls.Add(CreerCarte("🏁", "Terminés", data.GetStatut("Termine").ToString(), cSuccess));
             mainFlow.Controls.Add(CreerCarte("❌", "Rejetés", data.GetStatut("Rejete").ToString(), cDanger));

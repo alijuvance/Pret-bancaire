@@ -1,4 +1,4 @@
-﻿using PretBancaire.Services;
+using PretBancaire.Services;
 
 namespace PretBancaire.Forms
 {
@@ -6,6 +6,7 @@ namespace PretBancaire.Forms
     {
         private readonly AuthService _authService = new();
         private int _tentatives = 0;
+        private Label _lblErreur = null!;
 
         public FormLogin()
         {
@@ -150,7 +151,7 @@ namespace PretBancaire.Forms
             panelCenter.Controls.Add(btnConnexion);
 
             // === Label erreur ===
-            var lblErreur = new Label
+            _lblErreur = new Label
             {
                 Name = "lblErreur",
                 Font = new Font("Segoe UI", 9),
@@ -160,7 +161,7 @@ namespace PretBancaire.Forms
                 Location = new Point(40, 340),
                 TextAlign = ContentAlignment.MiddleCenter
             };
-            panelCenter.Controls.Add(lblErreur);
+            panelCenter.Controls.Add(_lblErreur);
 
             // === Touche Entrée ===
             this.AcceptButton = btnConnexion;
@@ -170,11 +171,9 @@ namespace PretBancaire.Forms
 
         private void SeConnecter(string login, string motDePasse)
         {
-            var lblErreur = this.Controls.Find("lblErreur", true).FirstOrDefault() as Label;
-
             if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(motDePasse))
             {
-                if (lblErreur != null) lblErreur.Text = "Veuillez remplir tous les champs.";
+                _lblErreur.Text = "Veuillez remplir tous les champs.";
                 return;
             }
 
@@ -191,8 +190,7 @@ namespace PretBancaire.Forms
                 else
                 {
                     _tentatives++;
-                    if (lblErreur != null)
-                        lblErreur.Text = $"Identifiants incorrects ({3 - _tentatives} tentative(s) restante(s))";
+                    _lblErreur.Text = $"Identifiants incorrects ({3 - _tentatives} tentative(s) restante(s))";
 
                     if (_tentatives >= 3)
                     {

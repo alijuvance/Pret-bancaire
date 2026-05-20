@@ -20,12 +20,10 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
     prenom          VARCHAR(100)    NOT NULL,
     login           VARCHAR(50)     NOT NULL UNIQUE,
     mot_de_passe    VARCHAR(255)    NOT NULL,
-    role            ENUM('Admin', 'Agent') NOT NULL DEFAULT 'Agent',
     date_creation   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actif           BOOLEAN         NOT NULL DEFAULT TRUE,
 
-    INDEX idx_login (login),
-    INDEX idx_role (role)
+    INDEX idx_login (login)
 ) ENGINE=InnoDB;
 
 -- =============================================================================
@@ -35,7 +33,6 @@ CREATE TABLE IF NOT EXISTS clients (
     id                  INT             AUTO_INCREMENT PRIMARY KEY,
     nom                 VARCHAR(100)    NOT NULL,
     prenom              VARCHAR(100)    NOT NULL,
-    date_naissance      DATE            NOT NULL,
     cin                 VARCHAR(20)     NOT NULL UNIQUE,
     telephone           VARCHAR(20)     NOT NULL,
     adresse             VARCHAR(255)    DEFAULT NULL,
@@ -62,7 +59,7 @@ CREATE TABLE IF NOT EXISTS prets (
                                         NOT NULL DEFAULT 'EnAttente',
     date_demande        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     date_approbation    DATETIME        DEFAULT NULL,
-    notes               TEXT            DEFAULT NULL,
+    description         TEXT            DEFAULT NULL,
 
     CONSTRAINT fk_prets_client
         FOREIGN KEY (client_id) REFERENCES clients(id)
@@ -100,14 +97,13 @@ CREATE TABLE IF NOT EXISTS paiements (
 -- DONNÉES INITIALES : Compte administrateur par défaut
 -- Mot de passe : "admin123" (haché en SHA-256 avec sel "PretBancaire_")
 -- =============================================================================
-INSERT INTO utilisateurs (nom, prenom, login, mot_de_passe, role)
+INSERT INTO utilisateurs (nom, prenom, login, mot_de_passe)
 VALUES (
     'Administrateur',
     'Système',
     'admin',
     -- SHA-256 de "PretBancaire_admin123"
-    'f129e32ef6db259d056fed2c1953ae408e555e53a6ec6c78d4e5775d577a6296',
-    'Admin'
+    'f129e32ef6db259d056fed2c1953ae408e555e53a6ec6c78d4e5775d577a6296'
 );
 
 

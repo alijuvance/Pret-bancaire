@@ -13,7 +13,7 @@ namespace PretBancaire.Forms
         private DataGridView dgv = null!;
         private TextBox txtRecherche = null!, txtNom = null!, txtPrenom = null!;
         private TextBox txtCin = null!, txtTel = null!, txtAdresse = null!, txtEmail = null!;
-        private DateTimePicker dtpNaissance = null!;
+        private Button btnNouveau = null!, btnEnregistrer = null!, btnModifier = null!, btnSupprimer = null!;
         private int? _selectedId = null;
 
         public FormClients()
@@ -73,19 +73,11 @@ namespace PretBancaire.Forms
             txtEmail = UIHelper.CreerTextBox(200);
             txtAdresse = UIHelper.CreerTextBox(200);
 
-            dtpNaissance = new DateTimePicker
-            {
-                Font = new Font("Segoe UI", 10),
-                Format = DateTimePickerFormat.Short,
-                Height = 34
-            };
-
             flowInputs.Controls.Add(UIHelper.CreerChamp("Nom", txtNom, 170));
             flowInputs.Controls.Add(UIHelper.CreerChamp("Prenom", txtPrenom, 170));
             flowInputs.Controls.Add(UIHelper.CreerChamp("CIN", txtCin, 130));
             flowInputs.Controls.Add(UIHelper.CreerChamp("Telephone", txtTel, 140));
             flowInputs.Controls.Add(UIHelper.CreerChamp("Email", txtEmail, 200));
-            flowInputs.Controls.Add(UIHelper.CreerChamp("Naissance", dtpNaissance, 130));
             flowInputs.Controls.Add(UIHelper.CreerChamp("Adresse", txtAdresse, 200));
             panelForm.Controls.Add(flowInputs);
 
@@ -98,17 +90,19 @@ namespace PretBancaire.Forms
                 Padding = new Padding(0, 8, 0, 0)
             };
 
-            var btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
+            btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
             btnNouveau.Click += (s, e) => NouveauClient();
 
-            var btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 140);
-            btnEnregistrer.Click += (s, e) => Sauvegarder();
+            btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 120);
+            btnEnregistrer.Click += (s, e) => Ajouter();
 
-            var btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentGreen, 130);
-            btnModifier.Click += (s, e) => { if (_selectedId.HasValue) txtNom.Focus(); else MessageBox.Show("Selectionnez un client.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); };
+            btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentOrange, 120);
+            btnModifier.Click += (s, e) => Modifier();
+            btnModifier.Enabled = false;
 
-            var btnSupprimer = UIHelper.CreerBouton("Supprimer", UIHelper.AccentRed, 120);
+            btnSupprimer = UIHelper.CreerBouton("Supprimer", UIHelper.AccentRed, 120);
             btnSupprimer.Click += (s, e) => Supprimer();
+            btnSupprimer.Enabled = false;
 
             flowBtns.Controls.Add(btnNouveau);
             flowBtns.Controls.Add(btnEnregistrer);
@@ -161,17 +155,10 @@ namespace PretBancaire.Forms
                             col.HeaderText = "Email"; 
                             UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotContact);
                             break;
-                        case "DateNaissance":
-                            col.HeaderText = "Naissance";
-                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotDate);
-                            col.DefaultCellStyle.Format = "dd/MM/yyyy";
-                            col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                            break;
                         case "Adresse":
                         case "DateInscription":
                         case "Actif":
                         case "NomComplet":
-                        case "Age":
                             col.Visible = false;
                             break;
                     }
@@ -206,12 +193,16 @@ namespace PretBancaire.Forms
                 txtTel.Text = c.Telephone;
                 txtEmail.Text = c.Email;
                 txtAdresse.Text = c.Adresse;
-                dtpNaissance.Value = c.DateNaissance;
+                if (btnModifier != null) btnModifier.Enabled = true;
+                if (btnSupprimer != null) btnSupprimer.Enabled = true;
+                if (btnEnregistrer != null) btnEnregistrer.Enabled = false;
             }
         }
 
-        private void Sauvegarder()
+        private void Ajouter()
         {
+            if (_selectedId.HasValue) return;
+
             var erreurs = ValidationHelper.ValiderClient(txtNom.Text, txtPrenom.Text, txtCin.Text, txtTel.Text, txtEmail.Text);
             if (erreurs.Count > 0)
             {
@@ -223,30 +214,65 @@ namespace PretBancaire.Forms
             {
                 var client = new Client
                 {
-                    Id = _selectedId ?? 0,
                     Nom = txtNom.Text.Trim(),
                     Prenom = txtPrenom.Text.Trim(),
                     Cin = txtCin.Text.Trim(),
                     Telephone = txtTel.Text.Trim(),
                     Email = txtEmail.Text.Trim(),
-                    Adresse = txtAdresse.Text.Trim(),
-                    DateNaissance = dtpNaissance.Value
+                    Adresse = txtAdresse.Text.Trim()
+                };
+
+                if (_service.CinExiste(client.Cin, null))
+                {
+                    MessageBox.Show("Ce CIN est déjà utilisé.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                _service.AjouterClient(client);
+                ChargerDonnees();
+                NouveauClient();
+                MessageBox.Show("Client enregistré avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void Modifier()
+        {
+            if (!_selectedId.HasValue) return;
+
+            var erreurs = ValidationHelper.ValiderClient(txtNom.Text, txtPrenom.Text, txtCin.Text, txtTel.Text, txtEmail.Text);
+            if (erreurs.Count > 0)
+            {
+                MessageBox.Show(string.Join("\n", erreurs), "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                var client = new Client
+                {
+                    Id = _selectedId.Value,
+                    Nom = txtNom.Text.Trim(),
+                    Prenom = txtPrenom.Text.Trim(),
+                    Cin = txtCin.Text.Trim(),
+                    Telephone = txtTel.Text.Trim(),
+                    Email = txtEmail.Text.Trim(),
+                    Adresse = txtAdresse.Text.Trim()
                 };
 
                 if (_service.CinExiste(client.Cin, _selectedId))
                 {
-                    MessageBox.Show("Ce CIN est deja utilise par un autre client.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Ce CIN est déjà utilisé.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                if (_selectedId.HasValue)
-                    _service.ModifierClient(client);
-                else
-                    _service.AjouterClient(client);
-
+                _service.ModifierClient(client);
                 ChargerDonnees();
                 NouveauClient();
-                MessageBox.Show("Client enregistre avec succes !", "Succes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Client modifié avec succès !", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -272,7 +298,9 @@ namespace PretBancaire.Forms
             _selectedId = null;
             txtNom.Clear(); txtPrenom.Clear(); txtCin.Clear();
             txtTel.Clear(); txtEmail.Clear(); txtAdresse.Clear();
-            dtpNaissance.Value = DateTime.Today.AddYears(-25);
+            if (btnEnregistrer != null) btnEnregistrer.Enabled = true;
+            if (btnModifier != null) btnModifier.Enabled = false;
+            if (btnSupprimer != null) btnSupprimer.Enabled = false;
             dgv.ClearSelection();
         }
     }

@@ -35,6 +35,15 @@ namespace PretBancaire.Utils
         // Stocke la couleur de pastille pour chaque colonne
         private static readonly Dictionary<string, Color> _columnDotColors = new();
 
+        // Polices et formats mis en cache pour éviter les fuites mémoire GDI
+        private static readonly Font HeaderFont = new("Segoe UI", 9.5f, FontStyle.Bold);
+        private static readonly StringFormat HeaderStringFormat = new()
+        {
+            Alignment = StringAlignment.Near,
+            LineAlignment = StringAlignment.Center,
+            Trimming = StringTrimming.EllipsisCharacter
+        };
+
         /// <summary>
         /// Enregistre la couleur de pastille pour un en-tete de colonne
         /// </summary>
@@ -115,18 +124,11 @@ namespace PretBancaire.Utils
             // Dessiner le texte apres la pastille
             int textX = dotX + dotSize + 8;
             var textRect = new Rectangle(textX, e.CellBounds.Y, e.CellBounds.Width - (textX - e.CellBounds.X) - 4, e.CellBounds.Height);
-            var headerFont = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             var textColor = Color.FromArgb(55, 65, 81);
 
             using (var textBrush = new SolidBrush(textColor))
             {
-                var sf = new StringFormat
-                {
-                    Alignment = StringAlignment.Near,
-                    LineAlignment = StringAlignment.Center,
-                    Trimming = StringTrimming.EllipsisCharacter
-                };
-                e.Graphics!.DrawString(col.HeaderText, headerFont, textBrush, textRect, sf);
+                e.Graphics!.DrawString(col.HeaderText, HeaderFont, textBrush, textRect, HeaderStringFormat);
             }
 
             e.Handled = true;

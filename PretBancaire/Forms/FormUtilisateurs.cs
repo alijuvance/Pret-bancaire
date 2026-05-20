@@ -12,7 +12,7 @@ namespace PretBancaire.Forms
         private readonly AuthService _service = new();
         private DataGridView dgv = null!;
         private TextBox txtLogin = null!, txtNom = null!, txtPrenom = null!, txtMdp = null!;
-        private ComboBox cmbRole = null!;
+        private Button btnNouveau = null!, btnEnregistrer = null!, btnModifier = null!, btnSupprimer = null!;
         private CheckBox chkActif = null!;
         private int? _selectedId = null;
 
@@ -56,16 +56,7 @@ namespace PretBancaire.Forms
             txtMdp = UIHelper.CreerTextBox(150);
             txtMdp.PasswordChar = (char)8226;
 
-            cmbRole = new ComboBox
-            {
-                Font = new Font("Segoe UI", 10),
-                Width = 130,
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                BackColor = UIHelper.BgInput,
-                ForeColor = UIHelper.TextPrimary
-            };
-            cmbRole.Items.AddRange(new[] { "Admin", "Agent" });
-            cmbRole.SelectedIndex = 1;
+
 
             chkActif = new CheckBox
             {
@@ -81,7 +72,6 @@ namespace PretBancaire.Forms
             flowInputs.Controls.Add(UIHelper.CreerChamp("Prenom", txtPrenom, 150));
             flowInputs.Controls.Add(UIHelper.CreerChamp("Login", txtLogin, 150));
             flowInputs.Controls.Add(UIHelper.CreerChamp("Mot de passe", txtMdp, 150));
-            flowInputs.Controls.Add(UIHelper.CreerChamp("Role", cmbRole, 130));
             flowInputs.Controls.Add(chkActif);
 
             panelForm.Controls.Add(flowInputs);
@@ -94,17 +84,19 @@ namespace PretBancaire.Forms
                 Padding = new Padding(0, 8, 0, 0)
             };
 
-            var btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
+            btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
             btnNouveau.Click += (s, e) => Nouveau();
 
-            var btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 140);
-            btnEnregistrer.Click += (s, e) => Sauvegarder();
+            btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 120);
+            btnEnregistrer.Click += (s, e) => Ajouter();
 
-            var btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentGreen, 130);
-            btnModifier.Click += (s, e) => { if (_selectedId.HasValue) txtNom.Focus(); else MessageBox.Show("Selectionnez un utilisateur.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); };
+            btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentOrange, 120);
+            btnModifier.Click += (s, e) => Modifier();
+            btnModifier.Enabled = false;
 
-            var btnSupprimer = UIHelper.CreerBouton("Supprimer", UIHelper.AccentRed, 120);
+            btnSupprimer = UIHelper.CreerBouton("Supprimer", UIHelper.AccentRed, 120);
             btnSupprimer.Click += (s, e) => SupprimerUtilisateur();
+            btnSupprimer.Enabled = false;
 
             flowBtns.Controls.Add(btnNouveau);
             flowBtns.Controls.Add(btnEnregistrer);
@@ -150,8 +142,7 @@ namespace PretBancaire.Forms
                             UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotSecurity);
                             break;
                         case "Role": 
-                            col.HeaderText = "R\u00f4le"; 
-                            UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotStatus);
+                            col.Visible = false;
                             break;
                         case "Actif": 
                             col.HeaderText = "Actif"; 
@@ -166,6 +157,7 @@ namespace PretBancaire.Forms
                             break;
                         case "MotDePasse":
                         case "NomComplet":
+                        case "EstAdmin":
                             col.Visible = false;
                             break;
                     }
@@ -185,13 +177,61 @@ namespace PretBancaire.Forms
                 txtPrenom.Text = u.Prenom;
                 txtLogin.Text = u.Login;
                 txtMdp.Clear();
-                cmbRole.SelectedItem = u.Role;
                 chkActif.Checked = u.Actif;
+                if (btnModifier != null) btnModifier.Enabled = true;
+                if (btnSupprimer != null) btnSupprimer.Enabled = true;
+                if (btnEnregistrer != null) btnEnregistrer.Enabled = false;
             }
         }
 
-        private void Sauvegarder()
+        private void Ajouter()
         {
+            if (_selectedId.HasValue) return;
+
+            if (string.IsNullOrWhiteSpace(txtLogin.Text) || string.IsNullOrWhiteSpace(txtNom.Text))
+            {
+                MessageBox.Show("Veuillez remplir les champs obligatoires (Nom, Login).", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtMdp.Text))
+            {
+                MessageBox.Show("Le mot de passe est obligatoire pour un nouvel utilisateur.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                var u = new Utilisateur
+                {
+                    Nom = txtNom.Text.Trim(),
+                    Prenom = txtPrenom.Text.Trim(),
+                    Login = txtLogin.Text.Trim(),
+                    Actif = chkActif.Checked,
+                    MotDePasse = txtMdp.Text.Trim()
+                };
+
+                if (_service.LoginExiste(u.Login, null))
+                {
+                    MessageBox.Show("Ce login est déjà utilisé.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                _service.AjouterUtilisateur(u);
+                ChargerDonnees();
+                Nouveau();
+                MessageBox.Show("Utilisateur enregistré avec succès.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void Modifier()
+        {
+            if (!_selectedId.HasValue) return;
+
             if (string.IsNullOrWhiteSpace(txtLogin.Text) || string.IsNullOrWhiteSpace(txtNom.Text))
             {
                 MessageBox.Show("Veuillez remplir les champs obligatoires (Nom, Login).", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -202,41 +242,34 @@ namespace PretBancaire.Forms
             {
                 var u = new Utilisateur
                 {
-                    Id = _selectedId ?? 0,
+                    Id = _selectedId.Value,
                     Nom = txtNom.Text.Trim(),
                     Prenom = txtPrenom.Text.Trim(),
                     Login = txtLogin.Text.Trim(),
-                    Role = cmbRole.SelectedItem?.ToString() ?? "Agent",
                     Actif = chkActif.Checked
                 };
 
-                string? newMdp = string.IsNullOrWhiteSpace(txtMdp.Text) ? null : txtMdp.Text.Trim();
+                if (_service.LoginExiste(u.Login, _selectedId))
+                {
+                    MessageBox.Show("Ce login est déjà utilisé.", "Doublon", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-                if (_selectedId.HasValue)
+                if (u.Id == AuthService.UtilisateurConnecte?.Id && !u.Actif)
                 {
-                    if (u.Id == AuthService.UtilisateurConnecte?.Id && !u.Actif)
-                    {
-                        MessageBox.Show("Vous ne pouvez pas desactiver votre propre compte.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-                    _service.ModifierUtilisateur(u);
-                    if (!string.IsNullOrWhiteSpace(newMdp))
-                        _service.ModifierMotDePasse(u.Id, newMdp);
+                    MessageBox.Show("Vous ne pouvez pas désactiver votre propre compte.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(newMdp))
-                    {
-                        MessageBox.Show("Le mot de passe est obligatoire pour un nouvel utilisateur.", "Erreur", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-                    u.MotDePasse = newMdp;
-                    _service.AjouterUtilisateur(u);
-                }
+
+                _service.ModifierUtilisateur(u);
+                
+                string newMdp = txtMdp.Text.Trim();
+                if (!string.IsNullOrWhiteSpace(newMdp))
+                    _service.ModifierMotDePasse(u.Id, newMdp);
 
                 ChargerDonnees();
                 Nouveau();
-                MessageBox.Show("Utilisateur enregistre avec succes.", "Succes", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Utilisateur modifié avec succès.", "Succès", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -265,8 +298,10 @@ namespace PretBancaire.Forms
         {
             _selectedId = null;
             txtNom.Clear(); txtPrenom.Clear(); txtLogin.Clear(); txtMdp.Clear();
-            cmbRole.SelectedIndex = 1;
             chkActif.Checked = true;
+            if (btnEnregistrer != null) btnEnregistrer.Enabled = true;
+            if (btnModifier != null) btnModifier.Enabled = false;
+            if (btnSupprimer != null) btnSupprimer.Enabled = false;
             dgv.ClearSelection();
         }
     }

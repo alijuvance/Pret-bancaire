@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PretBancaire")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+82d9bc3c2af6791f31821ae1b0a0aaeb4251114f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9d4e10a871f5144790f81105b7208eebc1c10ddd")]
 [assembly: System.Reflection.AssemblyProductAttribute("PretBancaire")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PretBancaire")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

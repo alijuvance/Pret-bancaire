@@ -17,19 +17,19 @@ namespace PretBancaire.Services
         {
             var pret = _pretRepo.GetById(paiement.PretId);
             if (pret == null)
-                return (false, "Prêt introuvable.");
+                return (false, "PrÃªt introuvable.");
 
             if (pret.Statut != "EnCours")
-                return (false, "Le paiement n'est possible que sur un prêt 'En Cours'.");
+                return (false, "Le paiement n'est possible que sur un prÃªt 'En Cours'.");
 
             decimal totalPaye = _repo.GetTotalPaye(paiement.PretId);
             decimal restant = pret.MontantTotal - totalPaye;
 
             if (paiement.Montant > restant)
-                return (false, $"Le montant dépasse le restant dû ({restant:N2} USD).");
+                return (false, $"Le montant dÃ©passe le restant dÃ» ({restant:N2} Ar).");
 
             if (paiement.Montant <= 0)
-                return (false, "Le montant doit être supérieur à 0.");
+                return (false, "Le montant doit Ãªtre supÃ©rieur Ã  0.");
 
             int id = _repo.Ajouter(paiement);
 
@@ -37,7 +37,22 @@ namespace PretBancaire.Services
             if (nouveauTotal >= pret.MontantTotal)
                 _pretRepo.ModifierStatut(pret.Id, "Termine");
 
-            return (true, $"Paiement #{id} enregistré. Restant: {(restant - paiement.Montant):N2} USD");
+            return (true, $"Paiement #{id} enregistrÃ©. Restant: {(restant - paiement.Montant):N2} Ar");
+        }
+
+        public (bool success, string message) ModifierPaiement(Paiement paiement)
+        {
+            if (paiement.Montant <= 0)
+                return (false, "Le montant doit Ãªtre supÃ©rieur Ã  0.");
+            
+            bool result = _repo.Modifier(paiement);
+            return result ? (true, "Paiement modifiÃ© avec succÃ¨s.") : (false, "Erreur lors de la modification du paiement.");
+        }
+
+        public (bool success, string message) SupprimerPaiement(int id)
+        {
+            bool result = _repo.Supprimer(id);
+            return result ? (true, "Paiement supprimÃ© avec succÃ¨s.") : (false, "Erreur lors de la suppression du paiement.");
         }
     }
 }

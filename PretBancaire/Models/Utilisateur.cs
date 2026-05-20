@@ -1,4 +1,4 @@
-﻿namespace PretBancaire.Models
+namespace PretBancaire.Models
 {
     /// <summary>
     /// Représente un utilisateur du système (Admin ou Agent bancaire).
@@ -11,7 +11,6 @@
         public string Prenom { get; set; } = string.Empty;
         public string Login { get; set; } = string.Empty;
         public string MotDePasse { get; set; } = string.Empty;
-        public string Role { get; set; } = "Agent";  // "Admin" ou "Agent"
         public DateTime DateCreation { get; set; } = DateTime.Now;
         public bool Actif { get; set; } = true;
 
@@ -20,12 +19,7 @@
         /// </summary>
         public string NomComplet => $"{Prenom} {Nom}";
 
-        /// <summary>
-        /// Vérifie si l'utilisateur est administrateur.
-        /// </summary>
-        public bool EstAdmin => Role == "Admin";
-
-        public override string ToString() => $"{NomComplet} ({Role})";
+        public override string ToString() => $"{NomComplet}";
     }
 }
 

@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using PretBancaire.Models;
 
 namespace PretBancaire.Data
@@ -68,13 +68,12 @@ namespace PretBancaire.Data
         {
             using var conn = DatabaseConnection.GetConnection();
             var cmd = new MySqlCommand(
-                @"INSERT INTO clients (nom, prenom, date_naissance, cin, telephone, adresse, email)
-                  VALUES (@nom, @prenom, @dn, @cin, @tel, @adr, @email);
+                @"INSERT INTO clients (nom, prenom, cin, telephone, adresse, email)
+                  VALUES (@nom, @prenom, @cin, @tel, @adr, @email);
                   SELECT LAST_INSERT_ID();", conn);
 
             cmd.Parameters.AddWithValue("@nom", c.Nom);
             cmd.Parameters.AddWithValue("@prenom", c.Prenom);
-            cmd.Parameters.AddWithValue("@dn", c.DateNaissance);
             cmd.Parameters.AddWithValue("@cin", c.Cin);
             cmd.Parameters.AddWithValue("@tel", c.Telephone);
             cmd.Parameters.AddWithValue("@adr", c.Adresse);
@@ -90,14 +89,13 @@ namespace PretBancaire.Data
         {
             using var conn = DatabaseConnection.GetConnection();
             var cmd = new MySqlCommand(
-                @"UPDATE clients SET nom = @nom, prenom = @prenom, date_naissance = @dn,
+                @"UPDATE clients SET nom = @nom, prenom = @prenom,
                   cin = @cin, telephone = @tel, adresse = @adr, email = @email
                   WHERE id = @id", conn);
 
             cmd.Parameters.AddWithValue("@id", c.Id);
             cmd.Parameters.AddWithValue("@nom", c.Nom);
             cmd.Parameters.AddWithValue("@prenom", c.Prenom);
-            cmd.Parameters.AddWithValue("@dn", c.DateNaissance);
             cmd.Parameters.AddWithValue("@cin", c.Cin);
             cmd.Parameters.AddWithValue("@tel", c.Telephone);
             cmd.Parameters.AddWithValue("@adr", c.Adresse);
@@ -167,7 +165,6 @@ namespace PretBancaire.Data
                 Id = reader.GetInt32("id"),
                 Nom = reader.GetString("nom"),
                 Prenom = reader.GetString("prenom"),
-                DateNaissance = reader.GetDateTime("date_naissance"),
                 Cin = reader.GetString("cin"),
                 Telephone = reader.GetString("telephone"),
                 Adresse = reader.IsDBNull(reader.GetOrdinal("adresse")) ? "" : reader.GetString("adresse"),

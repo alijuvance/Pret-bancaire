@@ -12,8 +12,9 @@ namespace PretBancaire.Forms
         private readonly PretService _service = new();
         private readonly ClientService _clientService = new();
         private DataGridView dgv = null!;
-        private ComboBox cmbClient = null!, cmbStatutFiltre = null!;
-        private TextBox txtMontant = null!, txtTaux = null!, txtDuree = null!, txtNotes = null!;
+        private ComboBox cmbClient = null!, cmbStatutFiltre = null!, cmbStatut = null!;
+        private TextBox txtMontant = null!, txtTaux = null!, txtDuree = null!, txtDescription = null!;
+        private Button btnNouveau = null!, btnEnregistrer = null!, btnModifier = null!, btnSupprimer = null!;
         private Label lblMensualite = null!, lblTotal = null!;
         private int? _selectedId = null;
 
@@ -31,7 +32,7 @@ namespace PretBancaire.Forms
 
             var lblFiltre = new Label { Text = "FILTRE :", ForeColor = UIHelper.TextSecondary, Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), AutoSize = true, Location = new Point(15, 18) };
             cmbStatutFiltre = new ComboBox { Location = new Point(80, 13), Width = 160, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10), BackColor = UIHelper.BgInput, ForeColor = UIHelper.TextPrimary };
-            cmbStatutFiltre.Items.AddRange(new[] { "Tous", "EnAttente", "Approuve", "Rejete", "EnCours", "Termine" });
+            cmbStatutFiltre.Items.AddRange(new[] { "Tous", "EnCours", "Termine", "Rejete" });
             cmbStatutFiltre.SelectedIndex = 0;
             cmbStatutFiltre.SelectedIndexChanged += (s, e) => Filtrer();
 
@@ -71,18 +72,24 @@ namespace PretBancaire.Forms
             txtMontant = UIHelper.CreerTextBox(130); txtMontant.TextChanged += (s, e) => CalculerApercu();
             txtTaux = UIHelper.CreerTextBox(80); txtTaux.Text = "8.5"; txtTaux.TextChanged += (s, e) => CalculerApercu();
             txtDuree = UIHelper.CreerTextBox(80); txtDuree.Text = "12"; txtDuree.TextChanged += (s, e) => CalculerApercu();
-            txtNotes = UIHelper.CreerTextBox(200);
+            
+            cmbStatut = new ComboBox { Font = new Font("Segoe UI", 10), Width = 120, DropDownStyle = ComboBoxStyle.DropDownList, BackColor = UIHelper.BgInput, ForeColor = UIHelper.TextPrimary };
+            cmbStatut.Items.AddRange(new[] { "EnCours", "Termine", "Rejete", "EnAttente", "Approuve" });
+            cmbStatut.SelectedIndex = 0;
+
+            txtDescription = UIHelper.CreerTextBox(200);
 
             flowInputs.Controls.Add(UIHelper.CreerChamp("Client", cmbClient, 220));
-            flowInputs.Controls.Add(UIHelper.CreerChamp("Montant (USD)", txtMontant, 130));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Montant (Ar)", txtMontant, 130));
             flowInputs.Controls.Add(UIHelper.CreerChamp("Taux %", txtTaux, 80));
-            flowInputs.Controls.Add(UIHelper.CreerChamp("Duree (Mois)", txtDuree, 80));
-            flowInputs.Controls.Add(UIHelper.CreerChamp("Notes", txtNotes, 200));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Duree", txtDuree, 80));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Statut", cmbStatut, 120));
+            flowInputs.Controls.Add(UIHelper.CreerChamp("Description", txtDescription, 200));
 
             // Apercu mensualite
             var panelApercu = new Panel { Width = 240, Height = 62, Margin = new Padding(15, 0, 0, 0) };
-            lblMensualite = new Label { Text = "Mensualite: 0.00 USD", Dock = DockStyle.Top, Height = 28, ForeColor = UIHelper.AccentBlue, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
-            lblTotal = new Label { Text = "Total a rembourser: 0.00 USD", Dock = DockStyle.Bottom, Height = 22, ForeColor = UIHelper.TextSecondary, Font = new Font("Segoe UI", 9) };
+            lblMensualite = new Label { Text = "Mensualite: 0.00 Ar", Dock = DockStyle.Top, Height = 28, ForeColor = UIHelper.AccentBlue, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+            lblTotal = new Label { Text = "Total a rembourser: 0.00 Ar", Dock = DockStyle.Bottom, Height = 22, ForeColor = UIHelper.TextSecondary, Font = new Font("Segoe UI", 9) };
             panelApercu.Controls.Add(lblMensualite);
             panelApercu.Controls.Add(lblTotal);
             flowInputs.Controls.Add(panelApercu);
@@ -98,22 +105,24 @@ namespace PretBancaire.Forms
                 Padding = new Padding(0, 8, 0, 0)
             };
 
-            var btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
+            btnNouveau = UIHelper.CreerBouton("Nouveau", Color.FromArgb(100, 116, 139), 120);
             btnNouveau.Click += (s, e) => Nouveau();
 
-            var btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 140);
-            btnEnregistrer.Click += (s, e) => CreerPret();
+            btnEnregistrer = UIHelper.CreerBouton("Enregistrer", UIHelper.AccentBlue, 120);
+            btnEnregistrer.Click += (s, e) => Ajouter();
 
-            var btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentGreen, 130);
-            btnModifier.Click += (s, e) => ModifierStatut();
+            btnModifier = UIHelper.CreerBouton("Modifier", UIHelper.AccentOrange, 120);
+            btnModifier.Click += (s, e) => Modifier();
+            btnModifier.Enabled = false;
 
-            var btnRejeter = UIHelper.CreerBouton("Rejeter", UIHelper.AccentRed, 120);
-            btnRejeter.Click += (s, e) => ChangerStatut("Rejete");
+            btnSupprimer = UIHelper.CreerBouton("Supprimer", UIHelper.AccentRed, 120);
+            btnSupprimer.Click += (s, e) => Supprimer();
+            btnSupprimer.Enabled = false;
 
             flowBtns.Controls.Add(btnNouveau);
             flowBtns.Controls.Add(btnEnregistrer);
             flowBtns.Controls.Add(btnModifier);
-            flowBtns.Controls.Add(btnRejeter);
+            flowBtns.Controls.Add(btnSupprimer);
 
             panelForm.Controls.Add(flowBtns);
             this.Controls.Add(panelForm);
@@ -145,7 +154,7 @@ namespace PretBancaire.Forms
                             UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotPerson);
                             break;
                         case "Montant":
-                            col.HeaderText = "Montant (USD)";
+                            col.HeaderText = "Montant (Ar)";
                             UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotMoney);
                             col.DefaultCellStyle.Format = "N2";
                             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -167,7 +176,7 @@ namespace PretBancaire.Forms
                             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                             break;
                         case "MontantTotal":
-                            col.HeaderText = "Total (USD)";
+                            col.HeaderText = "Total (Ar)";
                             UIHelper.SetColumnDotColor(dgv, col.Name, UIHelper.DotMoney);
                             col.DefaultCellStyle.Format = "N2";
                             col.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
@@ -185,7 +194,7 @@ namespace PretBancaire.Forms
                         case "ClientId":
                         case "Statut":
                         case "DateApprobation":
-                        case "Notes":
+                        case "Description":
                             col.Visible = false;
                             break;
                     }
@@ -217,24 +226,48 @@ namespace PretBancaire.Forms
             {
                 var mensualite = Pret.CalculerMensualite(m, t, d);
                 var total = mensualite * d;
-                lblMensualite.Text = "Mensualite: " + mensualite.ToString("N2") + " USD";
-                lblTotal.Text = "Total a rembourser: " + total.ToString("N2") + " USD";
+                lblMensualite.Text = "Mensualite: " + mensualite.ToString("N2") + " Ar";
+                lblTotal.Text = "Total a rembourser: " + total.ToString("N2") + " Ar";
             }
             else
             {
-                lblMensualite.Text = "Mensualite: -- USD";
-                lblTotal.Text = "Total a rembourser: -- USD";
+                lblMensualite.Text = "Mensualite: -- Ar";
+                lblTotal.Text = "Total a rembourser: -- Ar";
             }
         }
 
         private void OnSelectionChanged(object? sender, EventArgs e)
         {
             if (dgv.CurrentRow?.DataBoundItem is Pret p)
+            {
                 _selectedId = p.Id;
+                txtMontant.Text = p.Montant.ToString();
+                txtTaux.Text = p.TauxInteret.ToString();
+                txtDuree.Text = p.DureeMois.ToString();
+                txtDescription.Text = p.Description;
+                
+                foreach (ComboItem item in cmbClient.Items)
+                {
+                    if (item.Id == p.ClientId)
+                    {
+                        cmbClient.SelectedItem = item;
+                        break;
+                    }
+                }
+                
+                int statIdx = cmbStatut.Items.IndexOf(p.Statut);
+                if (statIdx >= 0) cmbStatut.SelectedIndex = statIdx;
+                
+                if (btnModifier != null) btnModifier.Enabled = true;
+                if (btnSupprimer != null) btnSupprimer.Enabled = true;
+                if (btnEnregistrer != null) btnEnregistrer.Enabled = false;
+            }
         }
 
-        private void CreerPret()
+        private void Ajouter()
         {
+            if (_selectedId.HasValue) return;
+
             var clientItem = cmbClient.SelectedItem as ComboItem;
             int? clientId = clientItem?.Id > 0 ? clientItem.Id : null;
 
@@ -247,17 +280,17 @@ namespace PretBancaire.Forms
 
             try
             {
-                var (success, message, _) = _service.CreerPret(
+                var result = _service.CreerPret(
                     clientId!.Value,
                     decimal.Parse(txtMontant.Text),
                     decimal.Parse(txtTaux.Text),
                     int.Parse(txtDuree.Text),
-                    txtNotes.Text.Trim()
+                    txtDescription.Text.Trim()
                 );
 
-                MessageBox.Show(message, success ? "Succes" : "Erreur",
-                    MessageBoxButtons.OK, success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
-                if (success) { ChargerDonnees(); Nouveau(); }
+                MessageBox.Show(result.message, result.success ? "Succès" : "Erreur",
+                    MessageBoxButtons.OK, result.success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+                if (result.success) { ChargerDonnees(); Nouveau(); }
             }
             catch (Exception ex)
             {
@@ -265,58 +298,34 @@ namespace PretBancaire.Forms
             }
         }
 
-        private void ModifierStatut()
+        private void Modifier()
         {
-            if (!_selectedId.HasValue)
+            if (!_selectedId.HasValue) return;
+
+            var clientItem = cmbClient.SelectedItem as ComboItem;
+            int? clientId = clientItem?.Id > 0 ? clientItem.Id : null;
+
+            var erreurs = ValidationHelper.ValiderPret(txtMontant.Text, txtTaux.Text, txtDuree.Text, clientId);
+            if (erreurs.Count > 0)
             {
-                MessageBox.Show("Veuillez selectionner un pret.", "Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            var choix = new string[] { "Approuve", "EnCours", "Termine" };
-            var form = new Form
-            {
-                Text = "Modifier le statut",
-                Size = new Size(320, 200),
-                StartPosition = FormStartPosition.CenterParent,
-                BackColor = UIHelper.BgDark,
-                ForeColor = UIHelper.TextPrimary,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
-                MaximizeBox = false,
-                MinimizeBox = false
-            };
-
-            var lbl = new Label { Text = "Nouveau statut :", Location = new Point(20, 20), AutoSize = true, Font = new Font("Segoe UI", 10) };
-            var cmb = new ComboBox { Location = new Point(20, 50), Width = 260, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
-            cmb.Items.AddRange(choix);
-            cmb.SelectedIndex = 0;
-
-            var btnOk = UIHelper.CreerBouton("Valider", UIHelper.AccentGreen, 120);
-            btnOk.Location = new Point(85, 110);
-            btnOk.Click += (s, e) => { form.DialogResult = DialogResult.OK; form.Close(); };
-
-            form.Controls.AddRange(new Control[] { lbl, cmb, btnOk });
-
-            if (form.ShowDialog() == DialogResult.OK)
-            {
-                ChangerStatut(cmb.SelectedItem?.ToString() ?? "Approuve");
-            }
-        }
-
-        private void ChangerStatut(string nouveauStatut)
-        {
-            if (!_selectedId.HasValue)
-            {
-                MessageBox.Show("Veuillez selectionner un pret.", "Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(string.Join("\n", erreurs), "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
-                var (success, message) = _service.ChangerStatutPret(_selectedId.Value, nouveauStatut);
-                MessageBox.Show(message, success ? "Succes" : "Erreur",
-                    MessageBoxButtons.OK, success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
-                if (success) ChargerDonnees();
+                var result = _service.ModifierPret(
+                    _selectedId.Value,
+                    decimal.Parse(txtMontant.Text),
+                    decimal.Parse(txtTaux.Text),
+                    int.Parse(txtDuree.Text),
+                    txtDescription.Text.Trim(),
+                    cmbStatut.SelectedItem?.ToString() ?? "EnCours"
+                );
+
+                MessageBox.Show(result.message, result.success ? "Succès" : "Erreur",
+                    MessageBoxButtons.OK, result.success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+                if (result.success) { ChargerDonnees(); Nouveau(); }
             }
             catch (Exception ex)
             {
@@ -324,11 +333,32 @@ namespace PretBancaire.Forms
             }
         }
 
+        private void Supprimer()
+        {
+            if (!_selectedId.HasValue) { MessageBox.Show("Sélectionnez un prêt.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
+            if (MessageBox.Show("Voulez-vous vraiment supprimer ce prêt ? Cette action est irréversible.", "Confirmation",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+
+            var (success, message) = _service.SupprimerPret(_selectedId.Value);
+            MessageBox.Show(message, success ? "Succès" : "Erreur",
+                MessageBoxButtons.OK, success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+
+            if (success) { ChargerDonnees(); Nouveau(); }
+        }
+
+
+
+
+
         private void Nouveau()
         {
             _selectedId = null;
-            txtMontant.Clear(); txtTaux.Text = "8.5"; txtDuree.Text = "12"; txtNotes.Clear();
+            txtMontant.Clear(); txtTaux.Text = "8.5"; txtDuree.Text = "12"; txtDescription.Clear();
+            cmbStatut.SelectedIndex = 0;
             if (cmbClient.Items.Count > 0) cmbClient.SelectedIndex = -1;
+            if (btnEnregistrer != null) btnEnregistrer.Enabled = true;
+            if (btnModifier != null) btnModifier.Enabled = false;
+            if (btnSupprimer != null) btnSupprimer.Enabled = false;
             dgv.ClearSelection();
         }
     }

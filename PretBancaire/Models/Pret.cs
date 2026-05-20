@@ -1,4 +1,4 @@
-﻿namespace PretBancaire.Models
+namespace PretBancaire.Models
 {
     /// <summary>
     /// Représente un prêt bancaire accordé à un client.
@@ -16,7 +16,7 @@
         public string Statut { get; set; } = "EnAttente";
         public DateTime DateDemande { get; set; } = DateTime.Now;
         public DateTime? DateApprobation { get; set; }
-        public string Notes { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         // Propriété de navigation (non stockée en BDD, remplie par jointure)
         public string? NomClient { get; set; }
@@ -60,7 +60,7 @@
         };
 
         public override string ToString() =>
-            $"Prêt #{Id} - {Montant:N2} USD - {StatutLibelle}";
+            $"Prêt #{Id} - {Montant:N2} Ar - {StatutLibelle}";
     }
 }
 
